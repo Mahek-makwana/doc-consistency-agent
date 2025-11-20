@@ -1,0 +1,11 @@
+requests
+fastapi
+uvicorn[standard]
+pydantic
+openai
+langchain
+pygments
+mkdocs
+python-frontmatter
+black
+pytest
