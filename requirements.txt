@@ -9,3 +9,15 @@ mkdocs
 python-frontmatter
 black
 pytest
+scikit-learn 
+scikit-learn
+numpy
+joblib
+python-dotenv
+PyYAML
+starlette
+typing-extensions
+watchfiles
+craft-ai-sdk
+jinja2
+python-multipart

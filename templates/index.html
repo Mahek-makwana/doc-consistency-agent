@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doc Consistency AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body class="p-10 flex flex-col items-center">
+
+    <div class="glass shadow-xl p-8 max-w-4xl w-full">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Doc Consistency Agent 🤖</h1>
+        <p class="text-gray-500 mb-6">Check potential alignment between your code and documentation.</p>
+
+        <form action="/analyze" method="post" enctype="multipart/form-data" class="space-y-6">
+            <div class="grid grid-cols-2 gap-6">
+                <!-- CODE COLUMN -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-gray-700">Source Code</label>
+                    <div class="bg-white p-4 rounded border">
+                        <label class="block text-xs uppercase text-gray-400 mb-1">Option A: Upload File</label>
+                        <input type="file" name="code_file" class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-blue-50 file:text-blue-700
+                            hover:file:bg-blue-100 mb-4
+                        " />
+
+                        <label class="block text-xs uppercase text-gray-400 mb-1">Option B: Paste Text</label>
+                        <textarea name="code_text"
+                            class="w-full h-32 p-2 border rounded focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm font-mono"
+                            placeholder="def add(a, b): return a + b">{{ code if code else '' }}</textarea>
+                    </div>
+                </div>
+
+                <!-- DOC COLUMN -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-gray-700">Documentation</label>
+                    <div class="bg-white p-4 rounded border">
+                        <label class="block text-xs uppercase text-gray-400 mb-1">Option A: Upload File</label>
+                        <input type="file" name="doc_file" class="block w-full text-sm text-gray-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-purple-50 file:text-purple-700
+                            hover:file:bg-purple-100 mb-4
+                        " />
+
+                        <label class="block text-xs uppercase text-gray-400 mb-1">Option B: Paste Text</label>
+                        <textarea name="doc_text"
+                            class="w-full h-32 p-2 border rounded focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm font-mono"
+                            placeholder="This function adds two numbers.">{{ doc if doc else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-bold shadow-lg transition transform hover:scale-[1.01]">🚀
+                Run Analysis</button>
+        </form>
+
+        {% if result %}
+        <div class="mt-8 border-t pt-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">Analysis Result</h2>
+
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="bg-white p-4 rounded shadow-sm text-center">
+                    <p class="text-xs text-gray-400 uppercase">Forward (Code→Doc)</p>
+                    <p class="text-2xl font-bold text-blue-600">{{ "%.2f"|format(result.forward_match) }}</p>
+                </div>
+                <div class="bg-white p-4 rounded shadow-sm text-center">
+                    <p class="text-xs text-gray-400 uppercase">Backward (Doc→Code)</p>
+                    <p class="text-2xl font-bold text-purple-600">{{ "%.2f"|format(result.backward_match) }}</p>
+                </div>
+                <div
+                    class="bg-white p-4 rounded shadow-sm text-center border-l-4 
+                    {% if result.symmetric_score > 0.7 %}border-green-500{% elif result.symmetric_score > 0.4 %}border-yellow-500{% else %}border-red-500{% endif %}">
+                    <p class="text-xs text-gray-400 uppercase">Symmetric Score</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ "%.2f"|format(result.symmetric_score) }}</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-100 rounded text-center">
+                <span class="font-bold text-gray-700">Verdict:</span>
+                <span
+                    class="ml-2 px-3 py-1 rounded-full text-sm font-medium 
+                    {% if result.symmetric_score > 0.7 %}bg-green-100 text-green-800{% elif result.symmetric_score > 0.4 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {{ result.match_label }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,63 @@
+name: Documentation Consistency CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  doc-consistency-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Run Consistency Analysis
+      id: analysis
+      run: |
+        # Run the main agent in CI mode
+        # This will assume main.py can run a check and output a report
+        python src/agent/main.py --ci
+
+    - name: Create Report Branch
+      if: success()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+        BRANCH_NAME="update-docs/$TIMESTAMP"
+        
+        git config --global user.name "Doc Consistency Bot"
+        git config --global user.email "bot@doc-consistency.com"
+        
+        git checkout -b $BRANCH_NAME
+        
+        # Check if report exists and add it
+        if [ -f "consistency_report.md" ]; then
+          git add consistency_report.md
+        fi
+        
+        if [ -f "suggestions.json" ]; then
+          git add suggestions.json
+        fi
+        
+        git commit -m "chore: automated consistency report"
+        git push origin $BRANCH_NAME

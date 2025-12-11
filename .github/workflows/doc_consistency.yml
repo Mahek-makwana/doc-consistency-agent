@@ -1,0 +1,42 @@
+name: Documentation Consistency Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  doc-consistency:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run documentation consistency scan
+      run: |
+        python ci_check.py > consistency_report.txt
+        cat consistency_report.txt
+
+    - name: Upload scan results
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-scan-results
+        path: consistency_report.txt
+
+    - name: Comment results in PR
+      if: github.event_name == 'pull_request'
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        filePath: consistency_report.txt
+

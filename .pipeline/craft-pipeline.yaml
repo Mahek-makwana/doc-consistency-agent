@@ -1,0 +1,31 @@
+name: Doc Consistency Pipeline
+description: Automated pipeline to check code-documentation consistency using CraftAI.
+
+inputs:
+  - name: github_repo
+    type: string
+    description: URL of the GitHub repository to check.
+  - name: branch
+    type: string
+    description: Branch to analyze.
+  - name: craft_token
+    type: secret
+    description: Authentication token for CraftAI.
+
+steps:
+  - name: setup_environment
+    command: pip install -r requirements.txt
+    
+  - name: pull_code
+    command: python -c "import os; os.system('git pull origin ' + os.environ.get('BRANCH', 'main'))"
+    
+  - name: run_analysis
+    command: python src/agent/main.py --mode pipeline
+    
+
+
+outputs:
+  - name: consistency_report
+    path: output/report.md
+  - name: suggestions
+    path: output/suggestions.json
