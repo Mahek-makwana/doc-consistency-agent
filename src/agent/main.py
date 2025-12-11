@@ -15,19 +15,73 @@ if PROJECT_ROOT not in sys.path:
 from src.utils.consistency_checker import ConsistencyChecker
 from src.agent.ai_suggester import suggest_documentation
 
+from fastapi import FastAPI, Request, Form, UploadFile, File
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from src.agent.stat_analysis import symmetric_analysis
+
 # ---------------------------------------------------
 # FastAPI App Construction
 # ---------------------------------------------------
 app = FastAPI(title="Doc Consistency Agent API")
 
-@app.get("/")
-def home():
-    return {"message": "Doc Consistency Agent API is running"}
+# Setup Templates
+TEMPLATES_DIR = os.path.join(PROJECT_ROOT, "templates")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    """
+    Serves the web interface.
+    """
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.post("/analyze", response_class=HTMLResponse)
+async def analyze(
+    request: Request,
+    code_text: str = Form(None),
+    doc_text: str = Form(None),
+    code_file: UploadFile = File(None),
+    doc_file: UploadFile = File(None)
+):
+    """
+    Analyzes uploaded code vs documentation.
+    """
+    # 1. Extract Code
+    c_content = code_text or ""
+    if code_file and code_file.filename:
+        content = await code_file.read()
+        c_content = content.decode("utf-8", errors="ignore")
+
+    # 2. Extract Doc
+    d_content = doc_text or ""
+    if doc_file and doc_file.filename:
+        content = await doc_file.read()
+        d_content = content.decode("utf-8", errors="ignore")
+
+    # 3. Perform Symmetric Analysis
+    if not c_content.strip() or not d_content.strip():
+        result = {
+            "forward_match": 0.0,
+            "backward_match": 0.0,
+            "symmetric_score": 0.0,
+            "match_label": "Missing Input",
+            "details": {}
+        }
+    else:
+        result = symmetric_analysis(c_content, d_content)
+
+    return templates.TemplateResponse("index.html", {
+        "request": request, 
+        "result": result,
+        "code": c_content,
+        "doc": d_content
+    })
 
 @app.post("/scan")
 def run_scan_api():
     """
-    API Endpoint to run the consistency check.
+    API Endpoint to run the consistency check on the full repo.
     """
     checker = ConsistencyChecker(code_dir="./src", doc_dir="./docs")
     results = checker.run_check()
@@ -121,6 +175,7 @@ def main():
         pipeline.run(perform_git_actions=args.git_ops)
     else:
         # Default to running API via uvicorn if main is executed directly for API
+        print("Starting Web Interface at http://localhost:8000 🚀")
         uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":

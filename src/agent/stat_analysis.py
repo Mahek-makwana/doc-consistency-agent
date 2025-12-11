@@ -9,10 +9,15 @@ class StatisticalAnalyzer:
     """
 
     def __init__(self):
-        # We adjust token_pattern to capture words, but we also probably want 
-        # to ensure we don't just rely on raw TF-IDF if the overlap is subtle.
-        # But let's try to be less strict on the token pattern first.
-        self.vectorizer = TfidfVectorizer(token_pattern=r"(?u)\b\w\w+\b")
+        # We use use_idf=False because in a 2-document comparison, IDF penalizes 
+        # words that appear in both (which is exactly what we WANT to match).
+        # We want to measure vocabulary overlap magnitude.
+        self.vectorizer = TfidfVectorizer(
+            token_pattern=r"(?u)\b\w\w+\b",
+            use_idf=False,
+            norm='l2',
+            sublinear_tf=True # Log scaling for TF (1+log(tf)) to reduce impact of repeated keywords
+        )
 
     def preprocess(self, text: str) -> str:
         """
@@ -68,11 +73,11 @@ class StatisticalAnalyzer:
             
             if len(missing_in_code) > 0:
                 top_missing = list(missing_in_code)[:5]
-                suggestions.append(f"Consider using these doc terms in your code: {', '.join(top_missing)}")
+                suggestions.append(f"The code does not mention these terms found in the documentation: {', '.join(top_missing)}.")
                 
             if len(missing_in_doc) > 0:
                 top_missing = list(missing_in_doc)[:5]
-                suggestions.append(f"Document these code elements: {', '.join(top_missing)}")
+                suggestions.append(f"The following code elements appear to be undocumented: {', '.join(top_missing)}.")
 
             return {
                 "score": float(similarity),
@@ -102,9 +107,9 @@ class StatisticalAnalyzer:
         sim_score = analysis["score"]
         
         match_label = "Poor match"
-        if sim_score > 0.75:
+        if sim_score > 0.60:
             match_label = "Excellent match"
-        elif sim_score > 0.40:
+        elif sim_score > 0.35:
             match_label = "Moderate match"
 
         return {

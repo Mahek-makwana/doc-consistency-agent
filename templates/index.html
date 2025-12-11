@@ -100,10 +100,60 @@
                 <span class="font-bold text-gray-700">Verdict:</span>
                 <span
                     class="ml-2 px-3 py-1 rounded-full text-sm font-medium 
-                    {% if result.symmetric_score > 0.7 %}bg-green-100 text-green-800{% elif result.symmetric_score > 0.4 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                    {% if result.symmetric_score > 0.6 %}bg-green-100 text-green-800{% elif result.symmetric_score > 0.35 %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
                     {{ result.match_label }}
                 </span>
             </div>
+
+            <!-- Why / Reasoning Section -->
+            <div class="bg-white p-6 rounded shadow-sm border border-gray-100 mt-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    🧐 Why?
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Shared Terms -->
+                    <div>
+                        <p class="text-xs font-bold text-green-600 uppercase mb-2 tracking-wide">✅ Shared Vocabulary</p>
+                        {% if result.details.common_words %}
+                        <div class="flex flex-wrap gap-2">
+                            {% for word in result.details.common_words[:15] %}
+                            <span
+                                class="bg-green-50 text-green-700 text-xs px-2 py-1 rounded border border-green-100">{{
+                                word }}</span>
+                            {% endfor %}
+                            {% if result.details.common_words|length > 15 %}
+                            <span class="text-xs text-gray-400 self-center">+{{ result.details.common_words|length - 15
+                                }} more</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <p class="text-sm text-gray-400 italic">No common keywords found between code and documentation.
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Gaps / Suggestions -->
+                    <div>
+                        <p class="text-xs font-bold text-blue-600 uppercase mb-2 tracking-wide">💡 Suggestions</p>
+                        {% if result.details.suggestions %}
+                        <ul class="space-y-2">
+                            {% for suggestion in result.details.suggestions %}
+                            <li class="text-sm text-gray-600 flex items-start">
+                                <span class="mr-2 text-yellow-500">•</span>
+                                {{ suggestion }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-sm text-green-600 italic flex items-center">
+                            <span class="mr-2">✨</span> No critical gaps detected. Great job!
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
         </div>
         {% endif %}
 
