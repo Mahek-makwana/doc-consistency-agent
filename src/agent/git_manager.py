@@ -48,10 +48,23 @@ class GitManager:
         print(f"Committing with message: {message}")
         self.run_git_command(["commit", "-m", message])
 
+    def check_remote_exists(self, remote="origin"):
+        """
+        Checks if a git remote exists.
+        """
+        remotes = self.run_git_command(["remote"])
+        if remotes:
+            return remote in remotes.splitlines()
+        return False
+
     def push_branch(self, branch_name):
         """
         Pushes the branch to origin.
         """
+        if not self.check_remote_exists("origin"):
+             print("   ⚠️ No remote 'origin' found. Skipping push.")
+             return False
+
         print(f"Pushing branch {branch_name} to origin...")
         # Note: This requires credentials to be configured in the environment
         result = self.run_git_command(["push", "origin", branch_name])
