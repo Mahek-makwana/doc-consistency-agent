@@ -49,21 +49,26 @@ def main():
 
     result = symmetric_analysis(code_text, doc_text)
     
-    print("\n------------------------------------------------")
-    print("SYMMETRIC CONSISTENCY REPORT")
-    print("------------------------------------------------")
+    print("\n" + "="*60)
+    print("        CRAFTAI - DOCSYNC AGENT REPORT")
+    print("="*60)
     print(f"Forward Match (Code->Doc): {result['forward_match']:.4f}")
     print(f"Backward Match (Doc->Code): {result['backward_match']:.4f}")
     print(f"Symmetric Score:           {result['symmetric_score']:.4f}")
-    print(f"Status:                    {result['match_label']}")
-    print("------------------------------------------------\n")
+    print(f"Status:                    {result['match_icon']} {result['match_label']}")
+    print("-" * 60)
+    
+    if result['details']['suggestions']:
+        print("\n💡 ACTIONABLE SUGGESTIONS:")
+        for sugg in result['details']['suggestions']:
+            print(f"  • {sugg}")
+    
+    print("-" * 60)
+    print(f"Common Keywords: {', '.join(result['details']['common_words'][:10])}...")
+    print("=" * 60 + "\n")
     
     # 3. Decision
-    # Let's say we require at least 0.20 to pass (very lenient start) or just check valid run.
-    # The prompt says "Check documentation consistency".
-    # I will fail if score is < 0.1 (basically nothing matches) to avoid false negatives blocking builds too often initially.
-    
-    THRESHOLD = 0.1
+    THRESHOLD = 0.15
     if result["symmetric_score"] < THRESHOLD:
         print(f"❌ FAILED: Consistency score {result['symmetric_score']:.4f} is below threshold {THRESHOLD}")
         sys.exit(1)

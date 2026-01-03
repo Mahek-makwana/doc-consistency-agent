@@ -1,4 +1,4 @@
-name: Documentation Consistency Check
+name: CraftAI - DocSync Agent Consistency Check
 
 on:
   push:

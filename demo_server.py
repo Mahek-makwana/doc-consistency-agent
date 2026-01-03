@@ -8,7 +8,7 @@ import os
 
 from src.agent.stat_analysis import symmetric_analysis
 
-app = FastAPI(title="Doc Consistency Demo")
+app = FastAPI(title="CraftAI - DocSync Agent")
 
 # Setup templates
 templates = Jinja2Templates(directory="templates")
@@ -62,4 +62,7 @@ async def analyze(
     })
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    # Get port from environment variable for cloud deployment
+    port = int(os.environ.get("PORT", 8000))
+    # Using 0.0.0.0 to allow external traffic in hosted environments
+    uvicorn.run(app, host="0.0.0.0", port=port)

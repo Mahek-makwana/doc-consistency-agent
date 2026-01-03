@@ -1,122 +1,201 @@
-# 🤖 Intelligent Documentation Consistency Agent
+# 🤖 CraftAI - DocSync Agent
+...
+The **CraftAI - DocSync Agent** is an advanced AI-powered pipeline designed to solve the chronic problem of **Documentation Drift**. Unlike standard linters that check for the *presence* of docstrings, this agent uses **Semantic Analysis** and **Machine Learning** to verify that your documentation actually *matches* the behavior of your code.
 
-> **An AI-powered pipeline that ensures your code and documentation are always in perfect sync.**
+---
 
-Unlike traditional linters that only check for *existence*, this agent uses **Semantic Analysis** and **Machine Learning** to verify that your documentation actually *describes* what your code *does*.
+## 📖 Table of Contents
+
+- [🚀 Overview](#-overview)
+- [✨ Key Features](#-key-features)
+- [🏗️ System Architecture](#-system-architecture)
+- [🛠️ Installation](#-installation)
+- [💻 Usage](#-usage)
+    - [Web Interface](#web-interface-ad-hoc-analysis)
+    - [CLI Pipeline](#cli-pipeline-automation)
+    - [Git Automation](#git-automation)
+- [⚙️ Configuration](#-configuration)
+- [🤖 CI/CD Integration](#-cicd-integration)
+- [👨‍💻 Tech Stack](#-tech-stack)
 
 ---
 
 ## 🚀 Overview
 
-In modern software development, code evolves fast, but documentation often lags behind. This "Documentation Drift" leads to confusion, bugs, and increased onboarding time.
+In agile environments, code changes frequently. Updating documentation is often an afterthought. This leads to:
+*   **Onboarding Friction**: New engineers read outdated docs.
+*   **API Misuse**: Consumers rely on incorrect parameter descriptions.
+*   **Technical Debt**: Accumulation of "dead" documentation.
 
-The **Doc Consistency Agent** solves this by:
-1.  **Analyzing** code and docs using TF-IDF and Cosine Similarity (Scikit-Learn).
-2.  **Detecting** mismatches, drift, and missing coverage.
-3.  **Reporting** detailed consistency scores and semantic gaps.
-4.  **Automating** fixes by generating missing docs and suggesting updates via Generative AI.
-5.  **Integrating** directly into your CI/CD pipeline with automated Git branching and Pull Requests.
+This agent acts as a **guardian**, running alongside your code to ensure:
+1.  **Existence**: Every function has documentation.
+2.  **Accuracy**: The documentation semantically describes the code's logic.
+3.  **Freshness**: Fixes are auto-generated and proposed via Pull Requests.
 
 ---
 
 ## ✨ Key Features
 
-### 🧠 1. Semantic Consistency Analysis (Idea 1)
-*   Uses **Scikit-Learn** validation logic.
-*   Calculates a **Symmetric Consistency Score** (Forward & Backward match).
-*   Identifies specific **vocabulary gaps** (e.g., Code uses "discount", Doc uses "tax").
-*   Ignores syntax noise to focus on *meaning*.
+### 🧠 1. Semantic Consistency Analysis (The "Brain")
+*   **TF-IDF Vectorization**: Converts code tokens and documentation text into high-dimensional vectors.
+*   **Cosine Similarity**: Measures the angle between vectors to determine valid semantic overlap.
+*   **Noise Reduction**: Filters out syntax characters (`(){};`) to focus on variable names, logic keywords, and comments.
+*   **Verification Levels**:
+    *   ✅ **Excellent (> 0.60)**: High alignment.
+    *   ⚠️ **Moderate (> 0.35)**: Vague or partial match.
+    *   ❌ **Poor (< 0.35)**: Critical mismatch or drift (e.g., function renamed but doc unchanged).
 
-### ⚡ 2. Automated Pipeline & GitOps (Idea 3)
-*   **Auto-Scan**: Runs on every commit or manually.
-*   **Auto-Document**: Generates Markdown documentation for undocumented functions using OpenAI.
-*   **Auto-PR**: Automatically creates a new branch, commits changes, and pushes to GitHub.
+### ⚡ 2. CraftAI Automated Pipeline
+*   **Auto-Discovery**: Recursively scans `src/` (Python) and `docs/` (Markdown).
+*   **Gap Analysis**: Identifies specific terms found in code but missing in docs (and vice versa).
+*   **Auto-Correction**: Uses **OpenAI GPT-4o-mini** to generate missing documentation or suggest rewrites for drifted docs.
 
-### 🌐 3. Interactive Web Interface
-*   **Ad-hoc Analysis**: Upload any code file and documentation file to check consistency instantly.
-*   **Visual Reports**: Color-coded verdicts (Excellent, Moderate, Poor).
-*   **AI Suggestions**: Receive actionable advice on how to align your terminology.
-
----
-
-## 🛠️ Technology Stack
-
-*   **Core**: Python 3.9+
-*   **AI/ML**: Scikit-Learn (TF-IDF, Cosine Similarity), OpenAI API.
-*   **Web Framework**: FastAPI, Uvicorn.
-*   **Frontend**: HTML5, TailwindCSS (Jinja2 Templates).
-*   **Automation**: GitPython, CI/CD Pipeline logic.
+### 🌐 3. Interactive Analysis Dashboard
+*   A clean **Web UI** for ad-hoc checks.
+*   Upload source files or paste text directly.
+*   Visual reports with color-coded "Verdicts" and detailed "Why?" reasoning.
 
 ---
 
-## 🏁 Getting Started
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    A[Source Code] --> C(Parser)
+    B[Documentation] --> C
+    C --> D[Statistical Analyzer]
+    D -- TF-IDF + Cosine --> E{Consistency Score}
+    E -- Low Score --> F[AI Suggester]
+    E -- Missing Doc --> F
+    E -- High Score --> G[Pass Report]
+    F -- Generate Content --> H[Git Manager]
+    H --> I[Auto-Branch & Push]
+```
+
+---
+
+## 🛠️ Installation
 
 ### Prerequisites
-*   Python 3.8+ installed.
-*   Git configured.
-*   (Optional) OpenAI API Key for AI suggestions.
+*   Python 3.8 or higher
+*   Git installed and configured
+*   (Optional) OpenAI API Key (for auto-generation features)
 
-### Installation
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/Mahek-makwana/doc-consistency-agent.git
-    cd doc-consistency-agent
-    ```
-
-2.  **Install Dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-3.  **Set up Environment (Optional):**
-    ```bash
-    export OPENAI_API_KEY="your-key-here"
-    ```
-
-### Usage
-
-#### 🅰️ Run the Web Interface (Interactive Mode)
-Start the server to use the beautiful web UI:
+### 1. Clone the Repository
 ```bash
-python src/agent/main.py
+git clone https://github.com/Mahek-makwana/doc-consistency-agent.git
+cd doc-consistency-agent
 ```
-> Open your browser at [http://localhost:8000](http://localhost:8000)
 
-#### 🅱️ Run the CI/CD Pipeline (Automation Mode)
-Run the full analysis on your repository. This will generate reports and suggestions in the `output/` folder.
+### 2. Install Dependencies
 ```bash
+pip install -r requirements.txt
+```
+
+### 3. Set Up Environment
+Create a `.env` file (optional) if you want AI generation features:
+```bash
+export OPENAI_API_KEY="sk-..."
+```
+
+---
+
+## 💻 Usage
+
+### Web Interface (Ad-Hoc Analysis)
+Best for checking individual files or quick tests.
+
+1.  Start the server:
+    ```bash
+    python src/agent/main.py
+    ```
+2.  Open your browser to: **[http://localhost:8000](http://localhost:8000)**
+3.  Upload your `.py` file and corresponding `.md` file.
+4.  View the semantic score, shared vocabulary, and fix suggestions.
+
+### CLI Pipeline (Automation)
+Best for running locally before pushing code.
+
+```bash
+# Run analysis and save report to output/
 python src/agent/main.py --mode pipeline --ci
 ```
 
-#### 🔄 Run with Git Automation
-Enable GitOps to automatically branch and push fixes:
+### Git Automation (The "CraftAI" Flow)
+Best for background agents. This will **create a branch**, **commit fixes**, and **push** to GitHub automatically.
+
 ```bash
 python src/agent/main.py --mode pipeline --ci --git-ops
 ```
 
----
-
-## 📊 How It Works
-
-1.  **Ingestion**: The agent parses Python (`.py`) files to extract functions/docstrings and Markdown (`.md`) documentation files.
-2.  **Vectorization**: It converts text into high-dimensional vectors using **TF-IDF**.
-3.  **Comparion**: It computes the **Cosine Similarity** between the Code Vector and Documentation Vector.
-    *   *Score > 0.60*: ✅ **Excellent Match**
-    *   *Score > 0.35*: ⚠️ **Moderate Match**
-    *   *Score < 0.35*: ❌ **Poor Match** (Drift Detected)
-4.  **Action**:
-    *   If undocumented: GEN-AI creates the doc.
-    *   If mismatched: GEN-AI suggests terminology fixes.
-    *   Final changes are packaged into a Git Commit.
+**What happens?**
+1.  Agent scans the repo.
+2.  Finds missing docs → Generates them.
+3.  Finds bad docs → Generates updates.
+4.  Creates branch `craftai-auto-docs-<timestamp>`.
+5.  Pushes to `origin` and prints a PR description.
 
 ---
 
-## 📸 Screenshots
+## 🤖 CI/CD Integration
 
-*(Add screenshots of the Web UI and Terminal Output here)*
+To run this agent automatically on every Pull Request, add this workflow file to your repo at `.github/workflows/doc-check.yml`:
+
+```yaml
+name: Doc Consistency Check
+
+on: [pull_request]
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+      - name: Run Analysis
+        run: python src/agent/main.py --mode pipeline --ci
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+```
 
 ---
 
-**Developed for the AI Clinic.**
-*Automating the boring stuff so engineers can focus on building.*
+## ⚙️ Configuration
+
+| Argument | Description | Default |
+| :--- | :--- | :--- |
+| `--mode` | Run mode: `api` (web server) or `pipeline` (CLI task). | `api` |
+| `--ci` | CI Mode: optimized logging and output for automation. | `False` |
+| `--git-ops` | Enables git branching/pushing behaviors. | `False` |
+| `--code-dir` | Directory to scan for source code (configurable in code). | `./src` |
+| `--doc-dir` | Directory to scan for documentation. | `./docs` |
+
+---
+
+## 👨‍💻 Tech Stack
+
+*   **Language**: Python 3.9
+*   **Web Framework**: FastAPI, Uvicorn, Jinja2
+*   **Machine Learning**: Scikit-Learn (stats), NumPy
+*   **LLM Integration**: OpenAI API (GPT-4o)
+*   **Version Control**: GitPython / Subprocess
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+1.  Fork the repository.
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
+
+---
+
+**Built with ❤️ for the AI Clinic.**
