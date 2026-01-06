@@ -118,18 +118,42 @@ class StatisticalAnalyzer:
         analysis = self.compute_similarity(code_text, doc_text)
         sim_score = analysis["score"]
         
+        # Categorize Issues
+        issues = {
+            "missing_code": analysis["missing_in_doc"],
+            "missing_docs": analysis["missing_in_code"],
+            "operational": [s for s in analysis["suggestions"] if "Operational" in s]
+        }
+
         if sim_score > 0.85:
             match_label = "Production Quality"
             icon = "💎"
+            summary = "Excellent alignment. Code and documentation are synchronized perfectly."
         elif sim_score > 0.65:
             match_label = "High Alignment"
             icon = "✅"
+            summary = "Strong alignment. Most core concepts are documented correctly."
         elif sim_score > 0.40:
             match_label = "Partial Alignment"
             icon = "⚠️"
+            summary = "Noticeable gaps detected. Some critical code logic lacks documentation support."
         else:
             match_label = "Poor Alignment"
             icon = "❌"
+            summary = "Critical mismatch. Documentation does not accurately reflect the source code."
+
+        # Analysis Summary
+        detailed_summary = f"{summary} Analyzed {len(analysis['common_words'])} common terms. "
+        if issues["missing_docs"]:
+            detailed_summary += f"Found {len(issues['missing_docs'])} document-only concepts not in code. "
+        if issues["missing_code"]:
+            detailed_summary += f"Detected {len(issues['missing_code'])} code-only terms missing in docs."
+
+        # Quick Fix (Draft)
+        quick_fixes = []
+        if issues["missing_code"]:
+            fix = "Add the following terms to your documentation: " + ", ".join(list(issues['missing_code'])[:5])
+            quick_fixes.append(fix)
 
         return {
             "forward_match": sim_score,
@@ -137,6 +161,20 @@ class StatisticalAnalyzer:
             "symmetric_score": sim_score,
             "match_label": match_label,
             "match_icon": icon,
+            "analysis_summary": detailed_summary,
+            "issue_summary": {
+                "total_issues": len(issues["missing_code"]) + len(issues["missing_docs"]) + len(issues["operational"]),
+                "categories": {
+                    "missing_in_docs": len(issues["missing_code"]),
+                    "zombie_docs": len(issues["missing_docs"]),
+                    "logic_gaps": len(issues["operational"])
+                }
+            },
+            "quick_fixes": quick_fixes,
+            "visual_data": {
+                "labels": ["Common", "Code Only", "Doc Only"],
+                "values": [len(analysis["common_words"]), len(issues["missing_code"]), len(issues["missing_docs"])]
+            },
             "details": analysis
         }
 

@@ -33,16 +33,18 @@ async def analyze(
 
     async def extract_from_zip(zip_content, target_extensions):
         extracted = []
+        files_found = []
         try:
             with zipfile.ZipFile(io.BytesIO(zip_content)) as z:
                 for name in z.namelist():
                     if name.endswith('/'): continue # Skip directories
                     if any(name.lower().endswith(ext.lower()) for ext in target_extensions):
+                        files_found.append(name)
                         with z.open(name) as f:
                             extracted.append(f.read().decode("utf-8", errors="ignore"))
         except Exception as e:
             print(f"Zip extraction error: {e}")
-        return "\n".join(extracted)
+        return "\n".join(extracted), files_found
 
     # 1. Read files into memory once to avoid stream exhaustion
     c_file_data = await code_file.read() if code_file and code_file.filename else None
@@ -50,30 +52,38 @@ async def analyze(
 
     final_code = code_text or ""
     final_doc = doc_text or ""
+    local_code_files = []
+    local_doc_files = []
 
     # 2. Logic for extraction
     if c_file_data:
         if code_file.filename.lower().endswith('.zip'):
-            final_code = await extract_from_zip(c_file_data, code_ex)
+            final_code, local_code_files = await extract_from_zip(c_file_data, code_ex)
             # SMART ZIP: If only one zip uploaded, check it for docs too
             if not d_file_data and not doc_text:
-                final_doc = await extract_from_zip(c_file_data, doc_ex)
+                final_doc, local_doc_files = await extract_from_zip(c_file_data, doc_ex)
         else:
             final_code = c_file_data.decode("utf-8", errors="ignore")
+            local_code_files = [code_file.filename]
 
     if d_file_data:
         if doc_file.filename.lower().endswith('.zip'):
-            final_doc = await extract_from_zip(d_file_data, doc_ex)
+            final_doc, local_doc_files = await extract_from_zip(d_file_data, doc_ex)
             # SMART ZIP reverse: If only one zip uploaded for doc, check it for code
             if not c_file_data and not code_text:
-                final_code = await extract_from_zip(d_file_data, code_ex)
+                final_code, local_code_files = await extract_from_zip(d_file_data, code_ex)
         else:
             final_doc = d_file_data.decode("utf-8", errors="ignore")
+            local_doc_files = [doc_file.filename]
 
     # Run Analysis
     result = None
     if final_code.strip() or final_doc.strip():
         result = symmetric_analysis(final_code, final_doc)
+        result["local_files"] = {
+            "code": local_code_files,
+            "docs": local_doc_files
+        }
     else:
         result = {
             "forward_match": 0, "backward_match": 0, "symmetric_score": 0,

@@ -174,117 +174,168 @@
                 </form>
             </div>
 
-            <!-- RESULT SECTION -->
+            <!-- PREMIUM DASHBOARD SECTION -->
             {% if result %}
             <div id="results" class="lg:col-span-12 space-y-8 animate-fade-in" style="animation-delay: 0.2s;">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    <!-- SCORING CARDS -->
-                    <div class="glass-card p-6 text-center space-y-2 border-l-4 border-indigo-500">
-                        <p class="text-slate-400 text-xs uppercase font-bold tracking-widest">Forward Match</p>
-                        <p class="text-4xl font-bold font-mono">{{ "%.0f"|format(result.forward_match * 100) }}%</p>
+
+                <!-- TOP HEADER & EXPORT -->
+                <div
+                    class="flex flex-col md:flex-row justify-between items-center bg-slate-800/40 p-6 rounded-2xl border border-slate-700">
+                    <div>
+                        <h2 class="text-3xl font-bold gradient-text">Analysis Dashboard</h2>
+                        <p class="text-slate-400">Comprehensive consistency report generated via CraftAI Statistical
+                            Engine</p>
                     </div>
-                    <div class="glass-card p-6 text-center space-y-2 border-l-4 border-purple-500">
-                        <p class="text-slate-400 text-xs uppercase font-bold tracking-widest">Backward Match</p>
-                        <p class="text-4xl font-bold font-mono">{{ "%.0f"|format(result.backward_match * 100) }}%</p>
-                    </div>
-                    <div
-                        class="glass-card p-6 text-center space-y-2 border-l-4 border-emerald-500 col-span-1 md:col-span-2 relative overflow-hidden">
-                        <div class="absolute inset-0 bg-emerald-500/5 pointer-events-none"></div>
-                        <p class="text-slate-400 text-xs uppercase font-bold tracking-widest">Symmetric Score</p>
-                        <div class="flex items-center justify-center space-x-3">
-                            <span class="text-4xl">{{ result.match_icon }}</span>
-                            <span class="text-4xl font-bold text-emerald-400 font-mono">{{
-                                "%.3f"|format(result.symmetric_score) }}</span>
-                        </div>
-                        <p class="text-emerald-400 font-semibold italic">{{ result.match_label }}</p>
+                    <div class="flex space-x-3 mt-4 md:mt-0">
+                        <button onclick="exportReport('text')"
+                            class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm transition-all flex items-center space-x-2">
+                            <span>Export .TXT</span>
+                        </button>
+                        <button onclick="window.print()"
+                            class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm transition-all font-bold">
+                            PDF Report
+                        </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- SUGGESTIONS -->
-                    <div class="glass-card p-8 space-y-6">
-                        <h3 class="text-2xl font-bold flex items-center space-x-2">
-                            <span class="text-yellow-400"><svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 14c-.77 1.333.192 3 1.732 3z">
-                                    </path>
-                                </svg></span>
-                            <span>Actionable Insights</span>
-                        </h3>
+                <!-- METRIC GRID -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="glass-card p-6 border-l-4 border-indigo-500">
+                        <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Symmetric Score</p>
+                        <div class="flex items-end space-x-2">
+                            <h3 class="text-4xl font-bold">{{ "%.3f"|format(result.symmetric_score) }}</h3>
+                            <span class="text-lg mb-1">{{ result.match_icon }}</span>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-emerald-500">
+                        <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Total Issues</p>
+                        <h3 class="text-4xl font-bold">{{ result.issue_summary.total_issues }}</h3>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-amber-500">
+                        <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Logic Gaps</p>
+                        <h3 class="text-4xl font-bold">{{ result.issue_summary.categories.logic_gaps }}</h3>
+                    </div>
+                    <div class="glass-card p-6 border-l-4 border-blue-500">
+                        <p class="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Status</p>
+                        <h3 class="text-xl font-bold text-blue-400 mt-2">{{ result.match_label }}</h3>
+                    </div>
+                </div>
 
-                        <div class="space-y-4">
-                            {% if result.details.suggestions %}
-                            {% for item in result.details.suggestions %}
-                            <div
-                                class="flex items-start space-x-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                                <div class="mt-1"><svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5l7 7-7 7"></path>
-                                    </svg></div>
-                                <p class="text-slate-300">{{ item }}</p>
-                            </div>
-                            {% endfor %}
-                            {% else %}
-                            <div class="text-center py-12 text-slate-500">
-                                <div class="text-6xl mb-4">🏆</div>
-                                <p>Perfect consistency detected! No suggestions needed.</p>
-                            </div>
-                            {% endif %}
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- LEFT COLUMN: SUMMARY & VISUAL -->
+                    <div class="lg:col-span-12 space-y-8">
+                        <div class="glass-card p-8">
+                            <h3 class="text-2xl font-bold mb-4 flex items-center space-x-2">
+                                <span>Analysis Summary</span>
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed text-lg italic">
+                                "{{ result.analysis_summary }}"
+                            </p>
                         </div>
                     </div>
 
-                    <!-- ANALYSIS DETAILS -->
-                    <div class="glass-card p-8 space-y-6">
-                        <h3 class="text-2xl font-bold flex items-center space-x-2">
-                            <span class="text-blue-400"><svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                    </path>
-                                </svg></span>
-                            <span>Analysis Metrics</span>
-                        </h3>
+                    <div class="lg:col-span-7 space-y-8">
+                        <!-- ISSUE CATEGORIES -->
+                        <div class="glass-card p-8">
+                            <h3 class="text-2xl font-bold mb-6">📉 Statistic Report</h3>
+                            <div class="space-y-6">
+                                <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+                                    <h4 class="text-sm font-bold text-slate-400 mb-3 uppercase tracking-tighter">Issue
+                                        Summary</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                                            <p class="text-xs text-red-400 font-bold">Missing in Docs</p>
+                                            <p class="text-2xl font-bold">{{
+                                                result.issue_summary.categories.missing_in_docs }}</p>
+                                        </div>
+                                        <div class="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                                            <p class="text-xs text-orange-400 font-bold">Zombie Docs</p>
+                                            <p class="text-2xl font-bold">{{ result.issue_summary.categories.zombie_docs
+                                                }}</p>
+                                        </div>
+                                    </div>
+                                </div>
 
-                        <div class="space-y-4">
-                            <div>
-                                <label
-                                    class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Common
-                                    Vocabulary ({{ result.details.common_words|length }})</label>
-                                <div class="flex flex-wrap gap-2">
-                                    {% for word in result.details.common_words[:20] %}
-                                    <span
-                                        class="px-3 py-1 bg-indigo-500/10 text-indigo-300 rounded-full text-xs font-mono border border-indigo-500/20">{{
-                                        word }}</span>
-                                    {% endfor %}
-                                    {% if result.details.common_words|length > 20 %}
-                                    <span class="px-3 py-1 text-slate-500 text-xs self-center">+{{
-                                        result.details.common_words|length - 20 }} more</span>
-                                    {% endif %}
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-400 mb-3">Quick Fix Suggestions</h4>
+                                    <div class="space-y-3">
+                                        {% for fix in result.quick_fixes %}
+                                        <div
+                                            class="p-4 bg-indigo-500/10 rounded-xl border border-indigo-500/30 text-indigo-200 text-sm flex items-start space-x-3">
+                                            <span class="mt-1">✨</span>
+                                            <p>{{ fix }}</p>
+                                        </div>
+                                        {% endfor %}
+                                        {% if not result.quick_fixes %}
+                                        <p class="text-slate-500 text-sm italic">No automated fixes required.</p>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
-                                    <label
-                                        class="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-1 block">Undocumented
-                                        Code</label>
-                                    <p class="text-2xl font-bold font-mono">{{ result.details.missing_in_doc|length }}
-                                    </p>
+                    <!-- RIGHT COLUMN: VISUAL SUMMARY -->
+                    <div class="lg:col-span-5">
+                        <div class="glass-card p-8 h-full">
+                            <h3 class="text-2xl font-bold mb-6 text-center">Visual Summary</h3>
+                            <div class="relative h-[300px] w-full flex items-center justify-center">
+                                <canvas id="visualChart"></canvas>
+                            </div>
+                            <div class="mt-8 grid grid-cols-3 gap-2 text-center">
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Common</p>
+                                    <p class="text-lg font-bold text-indigo-400">{{ result.visual_data.values[0] }}</p>
                                 </div>
-                                <div class="p-4 rounded-xl bg-slate-800/30 border border-slate-700/50">
-                                    <label
-                                        class="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-1 block">Doc-only
-                                        Keywords</label>
-                                    <p class="text-2xl font-bold font-mono">{{ result.details.missing_in_code|length }}
-                                    </p>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Code Only</p>
+                                    <p class="text-lg font-bold text-red-400">{{ result.visual_data.values[1] }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Doc Only</p>
+                                    <p class="text-lg font-bold text-emerald-400">{{ result.visual_data.values[2] }}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Chart.js Logic -->
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const ctx = document.getElementById('visualChart');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: {{ result.visual_data.labels | tojson | safe }},
+                    datasets: [{
+                        data: {{ result.visual_data.values | tojson | safe }},
+                    backgroundColor: ['#6366f1', '#ef4444', '#10b981'],
+                    borderColor: 'transparent',
+                    hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    cutout: '70%',
+                    maintainAspectRatio: false
+                }
+                });
+
+                function exportReport(type) {
+                    const content = `CRAFT AI - DOCSYNC REPORT\n========================\n\nScore: {{ result.symmetric_score }}\nStatus: {{ result.match_label }}\n\nSUMMARY:\n{{ result.analysis_summary }}\n\nISSUES:\n- Code terms missing in Doc: {{ result.issue_summary.categories.missing_in_docs }}\n- Doc terms missing in Code: {{ result.issue_summary.categories.zombie_docs }}\n- Logic gaps: {{ result.issue_summary.categories.logic_gaps }}\n\nSUGGESTIONS:\n{{ result.quick_fixes | join('\n') }}`;
+                    const blob = new Blob([content], { type: 'text/plain' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `craftai_report_${new Date().getTime()}.txt`;
+                    a.click();
+                }
+            </script>
             {% endif %}
         </main>
 

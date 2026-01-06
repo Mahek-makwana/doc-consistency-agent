@@ -73,6 +73,12 @@ The core engine is built using **Python** and **Scikit-Learn**. Here is the 3-st
 - **Feature**: This is our "Secret Sauce". The agent looks for **operational triggers**.
 - **Example**: If it sees the word `sqrt` or `**2` in the code, it checks if the documentation contains words like "root", "square", or "math". If not, it flags an **Operational Gap**, even if the vocabulary is otherwise similar.
 
+### D. Premium Reporting Dashboard (New)
+- **Statistic Report**: Provides a granular breakdown of score categories, logic gaps, and "zombie" (unused) documentation.
+- **Visual Summary**: Interactive **Chart.js** doughnuts that visualize the vocabulary overlap between code and docs.
+- **Quick Fix Suggestions**: Algorithmic generation of missing documentation snippets to bridge vocabulary gaps instantly.
+- **Export Analysis**: Professional export tools allowing users to download reports as **.TXT** or generate **PDF reports** via the browser print engine.
+
 ---
 
 ## 5. Website & Deployment Details
