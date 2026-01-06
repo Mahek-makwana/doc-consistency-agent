@@ -28,62 +28,67 @@ async def analyze(
     code_text: str = Form(None),
     doc_text: str = Form(None)
 ):
-    async def get_text(file: UploadFile, manual_text: str, extensions: list):
-        if file and file.filename and file.filename.strip():
-            try:
-                content = await file.read()
-                if not content:
-                    return manual_text or ""
-                    
-                if file.filename.lower().endswith('.zip'):
-                    # Process ZIP
-                    zip_text = []
-                    with zipfile.ZipFile(io.BytesIO(content)) as z:
-                        for name in z.namelist():
-                            # Case-insensitive extension check
-                            if any(name.lower().endswith(ext.lower()) for ext in extensions):
-                                with z.open(name) as f:
-                                    zip_text.append(f.read().decode("utf-8", errors="ignore"))
-                    return "\n".join(zip_text)
-                return content.decode("utf-8", errors="ignore")
-            except Exception as e:
-                print(f"Error processing file {file.filename}: {e}")
-                return manual_text or ""
-        return manual_text or ""
-
-    # Process Code
     code_ex = ['.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h', '.cs', '.go', '.rs', '.php', '.rb', '.pyi']
-    final_code = await get_text(code_file, code_text, code_ex)
-    
-    # Process Doc
     doc_ex = ['.md', '.txt', '.rst', '.html', '.htm', '.markdown']
-    final_doc = await get_text(doc_file, doc_text, doc_ex)
-    
+
+    async def extract_from_zip(zip_content, target_extensions):
+        extracted = []
+        try:
+            with zipfile.ZipFile(io.BytesIO(zip_content)) as z:
+                for name in z.namelist():
+                    if name.endswith('/'): continue # Skip directories
+                    if any(name.lower().endswith(ext.lower()) for ext in target_extensions):
+                        with z.open(name) as f:
+                            extracted.append(f.read().decode("utf-8", errors="ignore"))
+        except Exception as e:
+            print(f"Zip extraction error: {e}")
+        return "\n".join(extracted)
+
+    # 1. Read files into memory once to avoid stream exhaustion
+    c_file_data = await code_file.read() if code_file and code_file.filename else None
+    d_file_data = await doc_file.read() if doc_file and doc_file.filename else None
+
+    final_code = code_text or ""
+    final_doc = doc_text or ""
+
+    # 2. Logic for extraction
+    if c_file_data:
+        if code_file.filename.lower().endswith('.zip'):
+            final_code = await extract_from_zip(c_file_data, code_ex)
+            # SMART ZIP: If only one zip uploaded, check it for docs too
+            if not d_file_data and not doc_text:
+                final_doc = await extract_from_zip(c_file_data, doc_ex)
+        else:
+            final_code = c_file_data.decode("utf-8", errors="ignore")
+
+    if d_file_data:
+        if doc_file.filename.lower().endswith('.zip'):
+            final_doc = await extract_from_zip(d_file_data, doc_ex)
+            # SMART ZIP reverse: If only one zip uploaded for doc, check it for code
+            if not c_file_data and not code_text:
+                final_code = await extract_from_zip(d_file_data, code_ex)
+        else:
+            final_doc = d_file_data.decode("utf-8", errors="ignore")
+
     # Run Analysis
     result = None
     if final_code.strip() or final_doc.strip():
         result = symmetric_analysis(final_code, final_doc)
     else:
-        # Provide a dummy result with an error message
         result = {
-            "forward_match": 0,
-            "backward_match": 0,
-            "symmetric_score": 0,
-            "match_label": "No Input",
-            "match_icon": "❓",
+            "forward_match": 0, "backward_match": 0, "symmetric_score": 0,
+            "match_label": "No Input", "match_icon": "❓",
             "details": {
-                "suggestions": ["Please provide either source code or documentation (paste text or upload files)."],
-                "common_words": [],
-                "missing_in_code": [],
-                "missing_in_doc": []
+                "suggestions": ["Please provide source code or documentation (zip or paste)."],
+                "common_words": [], "missing_in_code": [], "missing_in_doc": []
             }
         }
     
     return templates.TemplateResponse("index.html", {
         "request": request,
         "result": result,
-        "code": final_code if not code_file or not code_file.filename.strip().lower().endswith('.zip') else f"[ZIP: {len(final_code)} chars extracted]",
-        "doc": final_doc if not doc_file or not doc_file.filename.strip().lower().endswith('.zip') else f"[ZIP: {len(final_doc)} chars extracted]"
+        "code": "[ZIP Content Extracted]" if c_file_data and code_file.filename.lower().endswith('.zip') else final_code,
+        "doc": "[ZIP Content Extracted]" if d_file_data and doc_file.filename.lower().endswith('.zip') else final_doc
     })
 
 if __name__ == "__main__":
