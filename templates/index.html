@@ -268,83 +268,120 @@
             {% if result %}
             <div id="results" class="lg:col-span-12 space-y-10 animate-fade-in" style="animation-delay: 0.2s;">
 
-                <!-- TOP HEADER & EXPORT -->
+                <!-- 1. ANALYSIS SUMMARY -->
                 <div
-                    class="flex flex-col md:flex-row justify-between items-center bg-slate-800/40 p-6 rounded-2xl border border-slate-700 shadow-xl">
-                    <div>
-                        <h2 class="text-3xl font-bold gradient-text">Analysis Summary</h2>
-                        <div class="mt-2 space-y-1 text-slate-400 text-sm">
-                            <p>• <strong>Status:</strong> ok</p>
-                            <p>• <strong>Mode:</strong> deterministic</p>
-                            <p>• <strong>Files analyzed:</strong> {{ result.structural.files_analyzed }}</p>
-                            <p>• <strong>Total issues detected:</strong> {{ result.structural.missing_functions_count +
-                                result.structural.missing_classes_count + result.structural.missing_methods_count }}</p>
-                        </div>
+                    class="bg-slate-800/40 p-8 rounded-[32px] border border-slate-700 shadow-2xl relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <svg class="w-24 h-24 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
                     </div>
-                    <div class="flex space-x-3 mt-4 md:mt-0">
-                        <button onclick="exportReport('text')"
-                            class="px-5 py-2.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-sm transition-all flex items-center space-x-2 font-semibold">
-                            <span>Export .TXT</span>
-                        </button>
-                        <button onclick="window.print()"
-                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-sm transition-all font-bold shadow-lg shadow-indigo-500/20">
-                            PDF Report
-                        </button>
-                    </div>
-                </div>
-
-                <!-- SCORE BADGE -->
-                <div
-                    class="p-4 rounded-xl {% if result.symmetric_score > 0.8 %}bg-emerald-500/10 border-emerald-500/30 text-emerald-400{% elif result.symmetric_score > 0.5 %}bg-amber-500/10 border-amber-500/30 text-amber-400{% else %}bg-red-500/10 border-red-500/30 text-red-400{% endif %} border-2 flex items-center space-x-3 font-bold text-lg">
-                    <span>⚠️</span>
-                    <span>Documentation Score: {{ "%.1f"|format(result.symmetric_score * 100) }}% - {{
-                        result.match_label }}</span>
-                </div>
-
-                <!-- ISSUE METRIC GRID -->
-                <div>
-                    <h3 class="text-2xl font-bold mb-6 flex items-center space-x-2">
-                        <span>📊 Issue Summary</span>
-                        <span class="text-slate-500 text-sm">🔗</span>
-                    </h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        <div class="space-y-1">
-                            <p class="text-slate-500 text-xs font-bold uppercase">Missing Classes</p>
-                            <h3 class="text-4xl font-bold">{{ result.structural.missing_classes_count }}</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-slate-500 text-xs font-bold uppercase">Missing Methods</p>
-                            <h3 class="text-4xl font-bold">{{ result.structural.missing_methods_count }}</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-slate-500 text-xs font-bold uppercase">Missing Functions</p>
-                            <h3 class="text-4xl font-bold">{{ result.structural.missing_functions_count }}</h3>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-slate-500 text-xs font-bold uppercase">Param Issues</p>
-                            <h3 class="text-4xl font-bold">0</h3>
+                    <div class="relative">
+                        <h2 class="text-3xl font-extrabold gradient-text mb-4">Analysis Summary</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-300">
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                    <p><strong>Files Analyzed:</strong> {{ result.structural.files_analyzed }} total
+                                        objects</p>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                                    <p><strong>Alignment Mode:</strong> Structural & Semantic Sync</p>
+                                </div>
+                            </div>
+                            <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5">
+                                <p class="text-sm font-light leading-relaxed">{{ result.analysis_summary }}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ISSUES DETECTED LIST -->
+                <!-- 2. STATISTIC REPORT -->
                 <div class="space-y-6">
-                    <h3 class="text-2xl font-bold flex items-center space-x-2">
-                        <span>📌 Issues Detected</span>
+                    <h3 class="text-2xl font-bold flex items-center space-x-3">
+                        <span class="bg-indigo-500/20 p-2 rounded-lg text-indigo-400">📊</span>
+                        <span>Statistic Report</span>
                     </h3>
-                    <div class="space-y-3">
-                        {% for item in result.structural.missing_items.classes %}
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="glass-card p-6 border-l-4 border-indigo-500">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Common Terms
+                            </p>
+                            <h4 class="text-3xl font-black text-indigo-400">{{ result.details.common_words|length }}
+                            </h4>
+                        </div>
+                        <div class="glass-card p-6 border-l-4 border-red-500">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Code Gaps</p>
+                            <h4 class="text-3xl font-black text-red-500">{{ result.details.missing_in_doc|length }}</h4>
+                        </div>
+                        <div class="glass-card p-6 border-l-4 border-emerald-500">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Doc Gaps</p>
+                            <h4 class="text-3xl font-black text-emerald-500">{{ result.details.missing_in_code|length }}
+                            </h4>
+                        </div>
+                        <div class="glass-card p-6 border-l-4 border-blue-500">
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sync Ratio</p>
+                            <h4 class="text-3xl font-black text-blue-400">{{ (result.symmetric_score * 100)|round(1) }}%
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. ISSUE SUMMARY -->
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold flex items-center space-x-3">
+                        <span class="bg-red-500/20 p-2 rounded-lg text-red-400">🚫</span>
+                        <span>Issue Summary</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div
-                            class="p-3 bg-slate-800/40 rounded-lg flex items-center space-x-3 text-sm border border-slate-700/50">
-                            <span class="text-orange-400 font-bold">🏗️ MISSING_DOC_CLASS:</span>
-                            <span class="text-slate-200 font-mono">{{ item }}</span>
+                            class="p-5 rounded-2xl bg-red-500/5 border border-red-500/20 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-red-400 font-bold uppercase mb-1">Logic Mismatches</p>
+                                <p class="text-2xl font-black">{{ result.issue_summary.categories.logic_gaps }}</p>
+                            </div>
+                            <div class="text-4xl opacity-20">⚠️</div>
+                        </div>
+                        <div
+                            class="p-5 rounded-2xl bg-orange-500/5 border border-orange-500/20 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-orange-400 font-bold uppercase mb-1">Missing In Docs</p>
+                                <p class="text-2xl font-black">{{ result.issue_summary.categories.missing_in_docs }}</p>
+                            </div>
+                            <div class="text-4xl opacity-20">🧩</div>
+                        </div>
+                        <div
+                            class="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-amber-400 font-bold uppercase mb-1">Zombie Docs</p>
+                                <p class="text-2xl font-black">{{ result.issue_summary.categories.zombie_docs }}</p>
+                            </div>
+                            <div class="text-4xl opacity-20">🧟</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. ISSUE SUGGESTED -->
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold flex items-center space-x-3">
+                        <span class="bg-amber-500/20 p-2 rounded-lg text-amber-400">💡</span>
+                        <span>Issue Suggested (Quick Fixes)</span>
+                    </h3>
+                    <div class="space-y-4">
+                        {% for item in result.structural.missing_items.classes %}
+                        <div class="flex items-center space-x-3 p-4 glass-card bg-slate-800/20">
+                            <span class="text-orange-400">🏗️</span>
+                            <p class="text-sm font-mono"><span
+                                    class="text-orange-400 font-bold mr-2">CLASS_MISSING_DOC:</span> {{ item }}</p>
                         </div>
                         {% endfor %}
                         {% for item in result.structural.missing_items.functions %}
-                        <div
-                            class="p-3 bg-slate-800/40 rounded-lg flex items-center space-x-3 text-sm border border-slate-700/50">
-                            <span class="text-yellow-500 font-bold">⚙️ MISSING_DOC_FUNCTION:</span>
-                            <span class="text-slate-200 font-mono">{{ item }}</span>
+                        <div class="flex items-center space-x-3 p-4 glass-card bg-slate-800/20">
+                            <span class="text-yellow-400">⚙️</span>
+                            <p class="text-sm font-mono"><span
+                                    class="text-yellow-400 font-bold mr-2">FUNC_MISSING_DOC:</span> {{ item }}</p>
                         </div>
                         {% endfor %}
                         {% for item in result.structural.missing_items.methods %}
@@ -361,60 +398,92 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div class="lg:col-span-7 space-y-8">
-                        <!-- QUICK FIX SECTION -->
-                        <div class="glass-card p-8 bg-slate-900/40">
-                            <h3 class="text-2xl font-bold mb-6 flex items-center space-x-2">
-                                <span>💡 Local Analysis: {{ result.structural.missing_functions_count +
-                                    result.structural.missing_classes_count }} issues found</span>
-                            </h3>
-                            <div class="space-y-4 text-slate-300 text-sm">
-                                <p class="font-bold underline uppercase text-xs tracking-widest text-slate-500">Issue
-                                    Breakdown:</p>
-                                <ul class="list-disc list-inside space-y-1 ml-2">
-                                    <li>Classes missing: {{ result.structural.missing_classes_count }}</li>
-                                    <li>Methods missing: {{ result.structural.missing_methods_count }}</li>
-                                    <li>Functions missing: {{ result.structural.missing_functions_count }}</li>
-                                    <li>Parameter inconsistencies: 0</li>
-                                </ul>
-                                <p class="mt-4"><strong>Functions:</strong> Ensure all public functions are listed with
-                                    brief descriptions.</p>
-                                <p class="mt-2 font-bold">Quick Fix: Try to use a structured format in your README.md
-                                    like:</p>
-                                <pre class="bg-black/40 p-4 rounded-xl font-mono text-red-400 text-xs">
-## API Reference
-### Class Name
-- Method name: Description
-                                </pre>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <!-- 5. LOCAL ANALYSIS -->
+                    <div class="glass-card p-10 bg-slate-900/60 border-t-4 border-indigo-500">
+                        <h3 class="text-2xl font-black mb-6">Local Analysis</h3>
+                        <div class="space-y-6 text-slate-300">
+                            <p class="text-sm leading-relaxed">Our CraftAI parser detected structural voids between your
+                                <code>.py</code> modules and the current documentation state. Below is the technical
+                                breakdown:
+                            </p>
+                            <div class="space-y-2">
+                                <div
+                                    class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-500">
+                                    <span>Analysis Metric</span>
+                                    <span>Delta Detected</span>
+                                </div>
+                                <div class="h-[1px] bg-white/10"></div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Structural Voids</span>
+                                    <span class="text-red-400 font-bold">+{{ result.structural.missing_functions_count +
+                                        result.structural.missing_classes_count }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Parameter Sync</span>
+                                    <span class="text-emerald-400 font-bold">100% Ok</span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span>Intent Match</span>
+                                    <span class="text-amber-400 font-bold">{{ (result.symmetric_score * 100)|round(0)
+                                        }}% Match</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ANALYTIC VISUAL -->
-                    <div class="lg:col-span-5">
-                        <div class="glass-card p-8 h-full bg-slate-900/40">
-                            <h3 class="text-2xl font-bold mb-6 text-center">📊 Documentation Health Map</h3>
-                            <div class="relative h-[250px] w-full flex items-center justify-center">
-                                <canvas id="visualChart"></canvas>
+                    <!-- 6. QUICK FIX -->
+                    <div class="glass-card p-10 bg-slate-900/60 border-t-4 border-purple-500">
+                        <h3 class="text-2xl font-black mb-6">Quick Fix</h3>
+                        <div class="space-y-4">
+                            <p class="text-xs text-slate-400 uppercase font-bold tracking-tighter">Recommended Action:
+                            </p>
+                            <div
+                                class="p-6 bg-black/40 rounded-2xl font-mono text-xs text-indigo-300 leading-6 border border-white/5">
+                                Add the following to your documentation:<br><br>
+                                <span class="text-slate-500"># API Overview</span><br>
+                                {% for item in result.structural.missing_items.functions[:2] %}
+                                ## {{ item }}<br>
+                                <span class="text-slate-600">Enter a brief description for {{ item }} here...</span><br>
+                                {% endfor %}
                             </div>
-                            <div class="mt-8 grid grid-cols-3 gap-2 text-center">
-                                <div>
-                                    <p class="text-[10px] text-slate-500 uppercase font-bold">Common</p>
-                                    <p class="text-lg font-bold text-indigo-400">{{ result.details.common_words|length
-                                        }}</p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-slate-500 uppercase font-bold">Code Only</p>
-                                    <p class="text-lg font-bold text-red-500">{{ result.details.missing_in_doc|length }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p class="text-[10px] text-slate-500 uppercase font-bold">Doc Only</p>
-                                    <p class="text-lg font-bold text-emerald-400">{{
-                                        result.details.missing_in_code|length }}</p>
-                                </div>
-                            </div>
+                            <button
+                                class="w-full py-3 bg-purple-600/20 hover:bg-purple-600/30 rounded-xl text-purple-400 text-xs font-bold transition-all border border-purple-500/20">
+                                Apply Auto-Doc Suggestion
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. VISUAL SUMMARY -->
+                <div class="glass-card p-10 bg-slate-900/40 relative">
+                    <h3 class="text-2xl font-bold mb-10 text-center">Visual Summary (Documentation Health)</h3>
+                    <div class="h-[300px] w-full flex items-center justify-center p-4">
+                        <canvas id="visualChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 8. EXPORT ANALYSIS -->
+                <div class="pt-10 border-t border-slate-800">
+                    <div
+                        class="flex flex-col md:flex-row items-center justify-between p-8 bg-indigo-500/5 rounded-[40px] border border-indigo-500/10">
+                        <div class="mb-6 md:mb-0">
+                            <h3 class="text-2xl font-black gradient-text">Export Analysis Report</h3>
+                            <p class="text-slate-500 text-sm mt-1">Download full text report in multiple formats</p>
+                        </div>
+                        <div class="flex flex-wrap gap-4 justify-center">
+                            <button onclick="window.print()"
+                                class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-2xl text-sm font-bold shadow-xl transition-all hover:-translate-y-1">
+                                📑 PDF Report
+                            </button>
+                            <button onclick="exportReport('word')"
+                                class="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-bold shadow-xl transition-all hover:-translate-y-1">
+                                📝 Word Doc
+                            </button>
+                            <button onclick="exportReport('text')"
+                                class="px-8 py-3 bg-slate-700 hover:bg-slate-600 rounded-2xl text-sm font-bold shadow-xl transition-all hover:-translate-y-1">
+                                📄 Text File
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -443,8 +512,8 @@
                         },
                         options: {
                             responsive: true,
-                            plugins: { legend: { display: false } },
-                            cutout: '70%',
+                            plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 12, family: 'Outfit' } } } },
+                            cutout: '75%',
                             maintainAspectRatio: false
                         }
                     });
@@ -452,11 +521,20 @@
 
                 window.exportReport = function (type) {
                     const content = `CRAFT AI - DOCSYNC REPORT\n========================\n\nScore: ${resultData.symmetric_score}\nStatus: ${resultData.match_label}\n\nSUMMARY:\n${resultData.analysis_summary}\n\nSTRUCTURAL ISSUES:\n- Missing Functions: ${resultData.structural.missing_functions_count}\n- Missing Classes: ${resultData.structural.missing_classes_count}\n- Missing Methods: ${resultData.structural.missing_methods_count}\n\nISSUES:\n- Code terms missing in Doc: ${resultData.issue_summary.categories.missing_in_docs}\n- Doc terms missing in Code: ${resultData.issue_summary.categories.zombie_docs}\n- Logic gaps: ${resultData.issue_summary.categories.logic_gaps}`;
-                    const blob = new Blob([content], { type: 'text/plain' });
+
+                    let blobType = 'text/plain';
+                    let ext = '.txt';
+
+                    if (type === 'word') {
+                        blobType = 'application/msword';
+                        ext = '.doc';
+                    }
+
+                    const blob = new Blob([content], { type: blobType });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `craftai_report_${new Date().getTime()}.txt`;
+                    a.download = `craftai_report_${new Date().getTime()}${ext}`;
                     a.click();
                 };
                 }) ();
@@ -485,6 +563,7 @@
 
             function updateUI(file) {
                 if (file) {
+                    console.log(`[CraftAI] ${prefix} file detected:`, file.name);
                     idleDiv.classList.add('hidden');
                     successDiv.classList.remove('hidden');
                     fileNameDisplay.textContent = file.name;
@@ -493,36 +572,62 @@
                 }
             }
 
-            input.addEventListener('change', () => updateUI(input.files[0]));
+            // Standard Click Selection
+            input.addEventListener('change', (e) => {
+                if (input.files.length > 0) {
+                    updateUI(input.files[0]);
+                }
+            });
 
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                label.addEventListener(eventName, e => {
+            // Drag and Drop Logic
+            ['dragenter', 'dragover'].forEach(eventName => {
+                label.addEventListener(eventName, (e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    label.classList.add('bg-slate-800', 'scale-[1.02]', 'border-' + activeColor);
                 }, false);
             });
 
-            ['dragenter', 'dragover'].forEach(eventName => {
-                label.addEventListener(eventName, () => label.classList.add('bg-slate-800', 'scale-[1.02]', 'border-indigo-500'), false);
-            });
-
             ['dragleave', 'drop'].forEach(eventName => {
-                label.addEventListener(eventName, () => label.classList.remove('bg-slate-800', 'scale-[1.02]', 'border-indigo-500'), false);
+                label.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    label.classList.remove('bg-slate-800', 'scale-[1.02]', 'border-' + activeColor);
+                }, false);
             });
 
-            label.addEventListener('drop', e => {
-                const files = e.dataTransfer.files;
-                if (files.length) {
-                    input.files = files;
+            label.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length > 0) {
+                    console.log(`[CraftAI] Drop detected for ${prefix}`);
+                    input.files = files; // Essential: Sync the dropped file to the input
                     updateUI(files[0]);
+
+                    // Force a change event to be sure
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
                 }
             }, false);
         }
 
+        // Initialize UI components
         setupFileUI('code_file', 'code', 'indigo-500');
         setupFileUI('doc_file', 'doc', 'purple-500');
 
-        document.getElementById('analysisForm').addEventListener('submit', function () {
+        // Form Submission Safeguard
+        document.getElementById('analysisForm').addEventListener('submit', function (e) {
+            const codeFile = document.getElementById('code_file').files[0];
+            const codeText = document.getElementsByName('code_text')[0].value;
+
+            if (!codeFile && !codeText.trim()) {
+                alert("Please provide source code via ZIP upload or manual paste.");
+                e.preventDefault();
+                return;
+            }
+
+            console.log("[CraftAI] Submitting form...");
             document.getElementById('loadingOverlay').classList.remove('hidden');
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
