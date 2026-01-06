@@ -104,17 +104,18 @@ async def analyze(
             except: pass
 
     for fname, content in doc_map.items():
-        if fname.endswith('.md') or fname.endswith('.txt'):
-            # Naive detection for names in headers
-            headers = re.findall(r'##\s+([\w\.]+)', content)
+        if fname.lower().endswith(('.md', '.txt')):
+            # Flexible header detection (## function_name, ## Function: login, etc.)
+            headers = re.findall(r'##\s+(?:[Ff]unction:?\s+|[Cc]lass:?\s+)?([\w\.]+)', content)
             doc_elements["functions"].update(headers)
             doc_elements["classes"].update(headers)
+            # Also look for bolded names in list items
+            items = re.findall(r'-\s+\*\*([\w\.]+)\*\*', content)
+            doc_elements["functions"].update(items)
 
-    missing_struct = {
-        "functions": sorted(list(code_elements["functions"] - doc_elements["functions"]))[:10],
-        "classes": sorted(list(code_elements["classes"] - doc_elements["classes"]))[:10],
-        "methods": sorted(list(code_elements["methods"] - doc_elements["functions"]))[:10]
-    }
+    missing_funcs = code_elements["functions"] - doc_elements["functions"]
+    missing_classes = code_elements["classes"] - doc_elements["classes"]
+    missing_methods = code_elements["methods"] - doc_elements["functions"]
 
     # Run Analysis
     result = None
@@ -122,20 +123,23 @@ async def analyze(
         result = symmetric_analysis(final_code_text, final_doc_text)
         result["structural"] = {
             "files_analyzed": len(code_map) + len(doc_map),
-            "missing_functions_count": len(code_elements["functions"] - doc_elements["functions"]),
-            "missing_classes_count": len(code_elements["classes"] - doc_elements["classes"]),
-            "missing_methods_count": len(code_elements["methods"] - doc_elements["functions"]),
-            "missing_items": missing_struct
+            "missing_functions_count": len(missing_funcs),
+            "missing_classes_count": len(missing_classes),
+            "missing_methods_count": len(missing_methods),
+            "missing_items": {
+                "functions": sorted(list(missing_funcs))[:10],
+                "classes": sorted(list(missing_classes))[:10],
+                "methods": sorted(list(missing_methods))[:10]
+            }
         }
-        # Override score if structural gaps are huge
-        struct_issues = result["structural"]["missing_functions_count"] + result["structural"]["missing_classes_count"]
-        if struct_issues > 5:
-            result["symmetric_score"] *= 0.8 # Documentation tax for missing elements
-            result["match_label"] = "Needs Work (Structural Gaps)"
     else:
         result = {
             "forward_match": 0, "backward_match": 0, "symmetric_score": 0,
             "match_label": "No Input", "match_icon": "❓",
+            "analysis_summary": "Please upload a ZIP file or paste text to begin analysis.",
+            "issue_summary": {"total_issues": 0, "categories": {"logic_gaps": 0, "missing_in_docs": 0, "zombie_docs": 0}},
+            "visual_data": {"labels": ["Common", "Code", "Doc"], "values": [0,0,0]},
+            "structural": {"files_analyzed": 0, "missing_functions_count": 0, "missing_classes_count": 0, "missing_methods_count": 0, "missing_items": {"functions":[],"classes":[],"methods":[]}},
             "details": {"suggestions": ["Provide code/docs."], "common_words": [], "missing_in_code": [], "missing_in_doc": []}
         }
     

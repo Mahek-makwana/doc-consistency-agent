@@ -109,7 +109,18 @@
         <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <!-- INPUT SECTION -->
             <div class="lg:col-span-12 glass-card p-8 animate-fade-in" style="animation-delay: 0.1s;">
-                <form action="/analyze" method="post" enctype="multipart/form-data" class="space-y-8">
+                <form action="/analyze" method="post" enctype="multipart/form-data" class="space-y-8" id="analysisForm">
+                    <div id="loadingOverlay"
+                        class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center">
+                        <div class="text-center space-y-4">
+                            <div
+                                class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto">
+                            </div>
+                            <p class="text-xl font-bold gradient-text animate-pulse">Running Structural Analysis...</p>
+                            <p class="text-slate-400 text-sm">Synchronizing logic and documentation via CraftAI</p>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- CODE COLUMN -->
                         <div class="space-y-4">
@@ -124,11 +135,12 @@
 
                             <div class="space-y-4">
                                 <div class="relative group">
-                                    <input type="file" name="code_file" id="code_file" class="hidden" />
-                                    <label for="code_file"
-                                        class="flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-500/5 transition-all text-sm text-slate-400">
+                                    <input type="file" name="code_file" id="code_file"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                    <div id="code_label"
+                                        class="flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-700 rounded-xl transition-all text-sm text-slate-400 pointer-events-none">
                                         Choose File or Drag & Drop
-                                    </label>
+                                    </div>
                                 </div>
                                 <textarea name="code_text"
                                     class="form-input w-full h-48 p-4 rounded-xl code-font text-sm"
@@ -150,11 +162,12 @@
 
                             <div class="space-y-4">
                                 <div class="relative group">
-                                    <input type="file" name="doc_file" id="doc_file" class="hidden" />
-                                    <label for="doc_file"
-                                        class="flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-700 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all text-sm text-slate-400">
+                                    <input type="file" name="doc_file" id="doc_file"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                    <div id="doc_label"
+                                        class="flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-700 rounded-xl transition-all text-sm text-slate-400 pointer-events-none">
                                         Choose File or Drag & Drop
-                                    </label>
+                                    </div>
                                 </div>
                                 <textarea name="doc_text"
                                     class="form-input w-full h-48 p-4 rounded-xl code-font text-sm"
@@ -163,7 +176,7 @@
                         </div>
                     </div>
 
-                    <button type="submit"
+                    <button type="submit" id="submitBtn"
                         class="btn-primary w-full py-4 rounded-xl text-lg font-bold shadow-2xl flex items-center justify-center space-x-2">
                         <span>Run Consistency Check</span>
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -333,37 +346,43 @@
             <!-- Chart.js Logic -->
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <script>
-                const ctx = document.getElementById('visualChart');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: {{ result.visual_data.labels | tojson | safe }},
-                    datasets: [{
-                        data: {{ result.visual_data.values | tojson | safe }},
-                    backgroundColor: ['#6366f1', '#ef4444', '#10b981'],
-                    borderColor: 'transparent',
-                    hoverOffset: 10
-                        }]
-                    },
-                    options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    cutout: '70%',
-                    maintainAspectRatio: false
-                }
-                });
+                (function () {
+                    const resultData = {{ result | tojson | safe if result else 'null'
+                }};
+                if (!resultData) return;
 
-                function exportReport(type) {
-                    const content = `CRAFT AI - DOCSYNC REPORT\n========================\n\nScore: {{ result.symmetric_score }}\nStatus: {{ result.match_label }}\n\nSUMMARY:\n{{ result.analysis_summary }}\n\nISSUES:\n- Code terms missing in Doc: {{ result.issue_summary.categories.missing_in_docs }}\n- Doc terms missing in Code: {{ result.issue_summary.categories.zombie_docs }}\n- Logic gaps: {{ result.issue_summary.categories.logic_gaps }}\n\nSUGGESTIONS:\n{{ result.quick_fixes | join('\n') }}`;
+                const ctx = document.getElementById('visualChart');
+                if (ctx) {
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: resultData.visual_data.labels,
+                            datasets: [{
+                                data: resultData.visual_data.values,
+                                backgroundColor: ['#6366f1', '#ef4444', '#10b981'],
+                                borderColor: 'transparent',
+                                hoverOffset: 10
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { display: false } },
+                            cutout: '70%',
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+
+                window.exportReport = function (type) {
+                    const content = `CRAFT AI - DOCSYNC REPORT\n========================\n\nScore: ${resultData.symmetric_score}\nStatus: ${resultData.match_label}\n\nSUMMARY:\n${resultData.analysis_summary}\n\nSTRUCTURAL ISSUES:\n- Missing Functions: ${resultData.structural.missing_functions_count}\n- Missing Classes: ${resultData.structural.missing_classes_count}\n- Missing Methods: ${resultData.structural.missing_methods_count}\n\nISSUES:\n- Code terms missing in Doc: ${resultData.issue_summary.categories.missing_in_docs}\n- Doc terms missing in Code: ${resultData.issue_summary.categories.zombie_docs}\n- Logic gaps: ${resultData.issue_summary.categories.logic_gaps}`;
                     const blob = new Blob([content], { type: 'text/plain' });
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
                     a.download = `craftai_report_${new Date().getTime()}.txt`;
                     a.click();
-                }
+                };
+                }) ();
             </script>
             {% endif %}
         </main>
@@ -380,20 +399,54 @@
     </div>
 
     <script>
-        document.getElementById('code_file').addEventListener('change', function (e) {
-            const fileName = e.target.files[0]?.name || 'Choose File or Drag & Drop';
-            this.nextElementSibling.textContent = fileName;
-            if (e.target.files[0]) {
-                this.nextElementSibling.classList.add('border-indigo-500', 'bg-indigo-500/10', 'text-indigo-300');
-            }
-        });
+        function setupDragAndDrop(inputId, labelId, activeClass) {
+            const input = document.getElementById(inputId);
+            const label = input.nextElementSibling;
 
-        document.getElementById('doc_file').addEventListener('change', function (e) {
-            const fileName = e.target.files[0]?.name || 'Choose File or Drag & Drop';
-            this.nextElementSibling.textContent = fileName;
-            if (e.target.files[0]) {
-                this.nextElementSibling.classList.add('border-purple-500', 'bg-purple-500/10', 'text-purple-300');
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                label.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                label.addEventListener(eventName, () => label.classList.add('border-indigo-500', 'bg-indigo-500/10'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                label.addEventListener(eventName, () => label.classList.remove('border-indigo-500', 'bg-indigo-500/10'), false);
+            });
+
+            label.addEventListener('drop', e => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                input.files = files;
+                updateLabel(input, activeClass);
+            }, false);
+
+            input.addEventListener('change', () => updateLabel(input, activeClass));
+        }
+
+        function updateLabel(input, activeClass) {
+            const fileName = input.files[0]?.name || 'Choose File or Drag & Drop';
+            const label = input.nextElementSibling;
+            label.textContent = fileName;
+            if (input.files[0]) {
+                label.classList.add('border-2', 'border-solid', activeClass, 'bg-opacity-20', 'text-white', 'font-bold');
+                label.classList.remove('border-dashed', 'text-slate-400');
             }
+        }
+
+        setupDragAndDrop('code_file', 'code_label', 'border-indigo-500');
+        setupDragAndDrop('doc_file', 'doc_label', 'border-purple-500');
+
+        document.getElementById('analysisForm').addEventListener('submit', function () {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.querySelector('span').textContent = 'Analyzing...';
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
         });
     </script>
 </body>
