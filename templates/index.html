@@ -122,61 +122,138 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- CODE COLUMN -->
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="bg-indigo-500/20 p-2 rounded-lg"><svg class="w-5 h-5 text-indigo-400"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                                    </svg></span>
-                                <h2 class="text-xl font-semibold">Source Code</h2>
+                        <!-- AUTOMATED UPLOAD COLUMN (CODE) -->
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-indigo-500/20 p-2 rounded-lg"><svg class="w-5 h-5 text-indigo-400"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                                        </svg></span>
+                                    <h2 class="text-xl font-bold">1. Source Code ZIP</h2>
+                                </div>
+                                <span
+                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Automated
+                                    Extraction</span>
                             </div>
 
-                            <div class="space-y-4" id="codeDropZone">
-                                <div class="relative">
-                                    <label for="code_file"
-                                        class="flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-500/5 transition-all text-center space-y-2">
-                                        <input type="file" name="code_file" id="code_file" class="hidden" />
-                                        <div id="code_status_icon" class="text-4xl">📁</div>
-                                        <div id="code_label_text" class="text-sm text-slate-400 font-semibold">Choose
-                                            Python ZIP or Paste Code</div>
-                                        <div id="code_file_name" class="text-xs text-indigo-400 font-mono hidden"></div>
-                                    </label>
-                                </div>
-                                <textarea name="code_text"
-                                    class="form-input w-full h-48 p-4 rounded-xl code-font text-sm"
-                                    placeholder="Paste your function or class here...">{{ code if code else '' }}</textarea>
+                            <div class="relative group" id="codeDropZone">
+                                <label for="code_file"
+                                    class="flex flex-col items-center justify-center w-full min-h-[220px] p-8 border-4 border-dashed border-slate-700 rounded-[32px] cursor-pointer hover:border-indigo-500 hover:bg-indigo-500/5 transition-all text-center space-y-4 shadow-inner relative overflow-hidden">
+                                    <input type="file" name="code_file" id="code_file" class="hidden" accept=".zip" />
+
+                                    <!-- Dynamic States -->
+                                    <div id="code_idle" class="space-y-4">
+                                        <div class="text-6xl group-hover:scale-110 transition-transform duration-300">📦
+                                        </div>
+                                        <div class="space-y-1">
+                                            <p class="text-lg font-bold text-slate-300">Drop Python Project ZIP here</p>
+                                            <p class="text-xs text-slate-500">FastAPI, Django, or custom modules
+                                                supported</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="code_success" class="hidden space-y-3 animate-fade-in">
+                                        <div
+                                            class="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto">
+                                            <span class="text-3xl">✅</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-indigo-400">Project Loaded</p>
+                                            <p id="code_file_name_display"
+                                                class="text-[11px] font-mono text-slate-500 mt-1 max-w-[200px] truncate">
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hover Glow -->
+                                    <div
+                                        class="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    </div>
+                                </label>
                             </div>
+
+                            <!-- Reduced Paste Part -->
+                            <details class="group">
+                                <summary
+                                    class="text-xs text-slate-500 cursor-pointer hover:text-indigo-400 transition-colors flex items-center space-x-1 outline-none">
+                                    <span class="group-open:rotate-90 transition-transform">▶</span>
+                                    <span>Or paste code snippet (Manual Mode)</span>
+                                </summary>
+                                <div class="mt-4 animate-fade-in">
+                                    <textarea name="code_text"
+                                        class="form-input w-full h-32 p-4 rounded-xl code-font text-xs"
+                                        placeholder="Paste your function or class here...">{{ code if code else '' }}</textarea>
+                                </div>
+                            </details>
                         </div>
 
-                        <!-- DOC COLUMN -->
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="bg-purple-500/20 p-2 rounded-lg"><svg class="w-5 h-5 text-purple-400"
-                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                        </path>
-                                    </svg></span>
-                                <h2 class="text-xl font-semibold">Documentation</h2>
+                        <!-- AUTOMATED UPLOAD COLUMN (DOCS) -->
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="bg-purple-500/20 p-2 rounded-lg"><svg class="w-5 h-5 text-purple-400"
+                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                            </path>
+                                        </svg></span>
+                                    <h2 class="text-xl font-bold">2. Documentation ZIP</h2>
+                                </div>
+                                <span
+                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Optional</span>
                             </div>
 
-                            <div class="space-y-4" id="docDropZone">
-                                <div class="relative">
-                                    <label for="doc_file"
-                                        class="flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all text-center space-y-2">
-                                        <input type="file" name="doc_file" id="doc_file" class="hidden" />
-                                        <div id="doc_status_icon" class="text-4xl">📄</div>
-                                        <div id="doc_label_text" class="text-sm text-slate-400 font-semibold">Choose
-                                            Markdown ZIP or Paste Docs</div>
-                                        <div id="doc_file_name" class="text-xs text-purple-400 font-mono hidden"></div>
-                                    </label>
-                                </div>
-                                <textarea name="doc_text"
-                                    class="form-input w-full h-48 p-4 rounded-xl code-font text-sm"
-                                    placeholder="Paste your documentation or markdown here...">{{ doc if doc else '' }}</textarea>
+                            <div class="relative group" id="docDropZone">
+                                <label for="doc_file"
+                                    class="flex flex-col items-center justify-center w-full min-h-[220px] p-8 border-4 border-dashed border-slate-700 rounded-[32px] cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all text-center space-y-4 shadow-inner relative overflow-hidden">
+                                    <input type="file" name="doc_file" id="doc_file" class="hidden"
+                                        accept=".zip,.md,.txt" />
+
+                                    <!-- Dynamic States -->
+                                    <div id="doc_idle" class="space-y-4">
+                                        <div class="text-6xl group-hover:scale-110 transition-transform duration-300">📖
+                                        </div>
+                                        <div class="space-y-1">
+                                            <p class="text-lg font-bold text-slate-300">Drop Documentation ZIP/File</p>
+                                            <p class="text-xs text-slate-500">Markdown (.md) or Text (.txt) archives</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="doc_success" class="hidden space-y-3 animate-fade-in">
+                                        <div
+                                            class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto">
+                                            <span class="text-3xl">✅</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-purple-400">Docs Loaded</p>
+                                            <p id="doc_file_name_display"
+                                                class="text-[11px] font-mono text-slate-500 mt-1 max-w-[200px] truncate">
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Hover Glow -->
+                                    <div
+                                        class="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                    </div>
+                                </label>
                             </div>
+
+                            <!-- Reduced Paste Part -->
+                            <details class="group">
+                                <summary
+                                    class="text-xs text-slate-500 cursor-pointer hover:text-purple-400 transition-colors flex items-center space-x-1 outline-none">
+                                    <span class="group-open:rotate-90 transition-transform">▶</span>
+                                    <span>Or paste docs snippet (Manual Mode)</span>
+                                </summary>
+                                <div class="mt-4 animate-fade-in">
+                                    <textarea name="doc_text"
+                                        class="form-input w-full h-32 p-4 rounded-xl code-font text-xs"
+                                        placeholder="Paste your documentation or markdown here...">{{ doc if doc else '' }}</textarea>
+                                </div>
+                            </details>
                         </div>
                     </div>
 
@@ -402,25 +479,22 @@
         function setupFileUI(inputId, prefix, activeColor) {
             const input = document.getElementById(inputId);
             const label = input.parentElement;
-            const statusIcon = document.getElementById(prefix + '_status_icon');
-            const labelText = document.getElementById(prefix + '_label_text');
-            const fileNameDiv = document.getElementById(prefix + '_file_name');
+            const idleDiv = document.getElementById(prefix + '_idle');
+            const successDiv = document.getElementById(prefix + '_success');
+            const fileNameDisplay = document.getElementById(prefix + '_file_name_display');
 
             function updateUI(file) {
                 if (file) {
-                    statusIcon.textContent = '✅';
-                    labelText.textContent = 'File Selected Successfully';
-                    fileNameDiv.textContent = file.name;
-                    fileNameDiv.classList.remove('hidden');
+                    idleDiv.classList.add('hidden');
+                    successDiv.classList.remove('hidden');
+                    fileNameDisplay.textContent = file.name;
                     label.classList.add('border-' + activeColor, 'bg-' + activeColor + '/10', 'border-solid');
                     label.classList.remove('border-dashed', 'border-slate-700');
                 }
             }
 
-            // Standard Click Selection
             input.addEventListener('change', () => updateUI(input.files[0]));
 
-            // Drag and Drop
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 label.addEventListener(eventName, e => {
                     e.preventDefault();
@@ -429,11 +503,11 @@
             });
 
             ['dragenter', 'dragover'].forEach(eventName => {
-                label.addEventListener(eventName, () => label.classList.add('bg-slate-800'), false);
+                label.addEventListener(eventName, () => label.classList.add('bg-slate-800', 'scale-[1.02]', 'border-indigo-500'), false);
             });
 
             ['dragleave', 'drop'].forEach(eventName => {
-                label.addEventListener(eventName, () => label.classList.remove('bg-slate-800'), false);
+                label.addEventListener(eventName, () => label.classList.remove('bg-slate-800', 'scale-[1.02]', 'border-indigo-500'), false);
             });
 
             label.addEventListener('drop', e => {
@@ -452,7 +526,7 @@
             document.getElementById('loadingOverlay').classList.remove('hidden');
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.innerHTML = '<span>⌛ Generating Report...</span>';
+            btn.innerHTML = '<span class="flex items-center space-x-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Processing Project ZIP...</span></span>';
             btn.classList.add('opacity-50', 'cursor-not-allowed');
         });
     </script>
