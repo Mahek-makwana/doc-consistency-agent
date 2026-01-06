@@ -133,14 +133,16 @@
                                 <h2 class="text-xl font-semibold">Source Code</h2>
                             </div>
 
-                            <div class="space-y-4">
-                                <div class="relative group">
-                                    <input type="file" name="code_file" id="code_file"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                    <div id="code_label"
-                                        class="flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-700 rounded-xl transition-all text-sm text-slate-400 pointer-events-none">
-                                        Choose File or Drag & Drop
-                                    </div>
+                            <div class="space-y-4" id="codeDropZone">
+                                <div class="relative">
+                                    <label for="code_file"
+                                        class="flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-500/5 transition-all text-center space-y-2">
+                                        <input type="file" name="code_file" id="code_file" class="hidden" />
+                                        <div id="code_status_icon" class="text-4xl">📁</div>
+                                        <div id="code_label_text" class="text-sm text-slate-400 font-semibold">Choose
+                                            Python ZIP or Paste Code</div>
+                                        <div id="code_file_name" class="text-xs text-indigo-400 font-mono hidden"></div>
+                                    </label>
                                 </div>
                                 <textarea name="code_text"
                                     class="form-input w-full h-48 p-4 rounded-xl code-font text-sm"
@@ -160,14 +162,16 @@
                                 <h2 class="text-xl font-semibold">Documentation</h2>
                             </div>
 
-                            <div class="space-y-4">
-                                <div class="relative group">
-                                    <input type="file" name="doc_file" id="doc_file"
-                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                                    <div id="doc_label"
-                                        class="flex items-center justify-center px-4 py-3 border-2 border-dashed border-slate-700 rounded-xl transition-all text-sm text-slate-400 pointer-events-none">
-                                        Choose File or Drag & Drop
-                                    </div>
+                            <div class="space-y-4" id="docDropZone">
+                                <div class="relative">
+                                    <label for="doc_file"
+                                        class="flex flex-col items-center justify-center w-full px-4 py-8 border-2 border-dashed border-slate-700 rounded-2xl cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all text-center space-y-2">
+                                        <input type="file" name="doc_file" id="doc_file" class="hidden" />
+                                        <div id="doc_status_icon" class="text-4xl">📄</div>
+                                        <div id="doc_label_text" class="text-sm text-slate-400 font-semibold">Choose
+                                            Markdown ZIP or Paste Docs</div>
+                                        <div id="doc_file_name" class="text-xs text-purple-400 font-mono hidden"></div>
+                                    </label>
                                 </div>
                                 <textarea name="doc_text"
                                     class="form-input w-full h-48 p-4 rounded-xl code-font text-sm"
@@ -177,12 +181,8 @@
                     </div>
 
                     <button type="submit" id="submitBtn"
-                        class="btn-primary w-full py-4 rounded-xl text-lg font-bold shadow-2xl flex items-center justify-center space-x-2">
-                        <span>Run Consistency Check</span>
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
+                        class="btn-primary w-full py-6 rounded-2xl text-xl font-extrabold shadow-2xl flex items-center justify-center space-x-3 transition-all">
+                        <span>🚀 Run Consistency Check</span>
                     </button>
                 </form>
             </div>
@@ -399,10 +399,28 @@
     </div>
 
     <script>
-        function setupDragAndDrop(inputId, labelId, activeClass) {
+        function setupFileUI(inputId, prefix, activeColor) {
             const input = document.getElementById(inputId);
-            const label = input.nextElementSibling;
+            const label = input.parentElement;
+            const statusIcon = document.getElementById(prefix + '_status_icon');
+            const labelText = document.getElementById(prefix + '_label_text');
+            const fileNameDiv = document.getElementById(prefix + '_file_name');
 
+            function updateUI(file) {
+                if (file) {
+                    statusIcon.textContent = '✅';
+                    labelText.textContent = 'File Selected Successfully';
+                    fileNameDiv.textContent = file.name;
+                    fileNameDiv.classList.remove('hidden');
+                    label.classList.add('border-' + activeColor, 'bg-' + activeColor + '/10', 'border-solid');
+                    label.classList.remove('border-dashed', 'border-slate-700');
+                }
+            }
+
+            // Standard Click Selection
+            input.addEventListener('change', () => updateUI(input.files[0]));
+
+            // Drag and Drop
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 label.addEventListener(eventName, e => {
                     e.preventDefault();
@@ -411,41 +429,30 @@
             });
 
             ['dragenter', 'dragover'].forEach(eventName => {
-                label.addEventListener(eventName, () => label.classList.add('border-indigo-500', 'bg-indigo-500/10'), false);
+                label.addEventListener(eventName, () => label.classList.add('bg-slate-800'), false);
             });
 
             ['dragleave', 'drop'].forEach(eventName => {
-                label.addEventListener(eventName, () => label.classList.remove('border-indigo-500', 'bg-indigo-500/10'), false);
+                label.addEventListener(eventName, () => label.classList.remove('bg-slate-800'), false);
             });
 
             label.addEventListener('drop', e => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                input.files = files;
-                updateLabel(input, activeClass);
+                const files = e.dataTransfer.files;
+                if (files.length) {
+                    input.files = files;
+                    updateUI(files[0]);
+                }
             }, false);
-
-            input.addEventListener('change', () => updateLabel(input, activeClass));
         }
 
-        function updateLabel(input, activeClass) {
-            const fileName = input.files[0]?.name || 'Choose File or Drag & Drop';
-            const label = input.nextElementSibling;
-            label.textContent = fileName;
-            if (input.files[0]) {
-                label.classList.add('border-2', 'border-solid', activeClass, 'bg-opacity-20', 'text-white', 'font-bold');
-                label.classList.remove('border-dashed', 'text-slate-400');
-            }
-        }
-
-        setupDragAndDrop('code_file', 'code_label', 'border-indigo-500');
-        setupDragAndDrop('doc_file', 'doc_label', 'border-purple-500');
+        setupFileUI('code_file', 'code', 'indigo-500');
+        setupFileUI('doc_file', 'doc', 'purple-500');
 
         document.getElementById('analysisForm').addEventListener('submit', function () {
             document.getElementById('loadingOverlay').classList.remove('hidden');
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
-            btn.querySelector('span').textContent = 'Analyzing...';
+            btn.innerHTML = '<span>⌛ Generating Report...</span>';
             btn.classList.add('opacity-50', 'cursor-not-allowed');
         });
     </script>
