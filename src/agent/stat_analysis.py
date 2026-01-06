@@ -78,14 +78,19 @@ class StatisticalAnalyzer:
             t2 = self.preprocess(text2)
             
             vectors = self.vectorizer.fit_transform([t1, t2])
-            raw_similarity = float(cosine_similarity(vectors[0], vectors[1])[0][0])
-            
-            # --- Scoring Calibration ---
-            # Boost score slightly to account for the "documentation tax" (descriptive fluff)
-            # A human perfect match often lands at 0.6-0.7 raw. We normalize this.
-            score = min(1.0, raw_similarity * 1.5)
-            
             feature_names = self.vectorizer.get_feature_names_out()
+            
+            if len(feature_names) == 0:
+                return {
+                    "score": 0.0, 
+                    "common_words": [], 
+                    "missing_in_code": [], 
+                    "missing_in_doc": [], 
+                    "suggestions": ["No meaningful words found for analysis. Please check your input."]
+                }
+
+            raw_similarity = float(cosine_similarity(vectors[0], vectors[1])[0][0])
+            score = min(1.0, raw_similarity * 1.5)
             dense = vectors.toarray()
             
             code_words = {feature_names[i] for i, val in enumerate(dense[0]) if val > 0}

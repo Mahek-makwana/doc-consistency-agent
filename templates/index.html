@@ -299,6 +299,23 @@
         </footer>
     </div>
 
+    <script>
+        document.getElementById('code_file').addEventListener('change', function (e) {
+            const fileName = e.target.files[0]?.name || 'Choose File or Drag & Drop';
+            this.nextElementSibling.textContent = fileName;
+            if (e.target.files[0]) {
+                this.nextElementSibling.classList.add('border-indigo-500', 'bg-indigo-500/10', 'text-indigo-300');
+            }
+        });
+
+        document.getElementById('doc_file').addEventListener('change', function (e) {
+            const fileName = e.target.files[0]?.name || 'Choose File or Drag & Drop';
+            this.nextElementSibling.textContent = fileName;
+            if (e.target.files[0]) {
+                this.nextElementSibling.classList.add('border-purple-500', 'bg-purple-500/10', 'text-purple-300');
+            }
+        });
+    </script>
 </body>
 
 </html>
