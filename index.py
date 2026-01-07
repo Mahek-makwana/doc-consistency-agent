@@ -1,26 +1,39 @@
 from fastapi import FastAPI, Request, File, UploadFile
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
 import os
 import zipfile
 import io
 import re
 from typing import Dict, Any, List, Set
+from jinja2 import Template
 
 app = FastAPI()
 
-# Standard Vercel Root Config
-templates = Jinja2Templates(directory="templates")
+# Manual Template Loading for Vercel Stability
+def render_dashboard(request: Request, result: Any = None):
+    # Get absolute path to template
+    base_path = os.path.dirname(__file__)
+    template_path = os.path.join(base_path, "templates", "index.html")
+    
+    try:
+        with open(template_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+        
+        # Use Jinja2 to render the string directly
+        # This bypasses the directory-scanning issues on Vercel
+        template = Template(html_content)
+        return template.render(request=request, result=result)
+    except Exception as e:
+        return f"<html><body><h1>Vercel Deployment Error</h1><p>Could not load template at {template_path}. Error: {str(e)}</p></body></html>"
 
-# ANALYSIS LOGIC (Embedded for stability)
 class EnterpriseDocSyncEngine:
     def __init__(self):
         self.patterns = {
             "logic": [
-                r"def\s+([A-Za-z_]\w*)",           # Python
-                r"function\s+([A-Za-z_]\w*)",      # JS/TS
-                r"class\s+([A-Za-z_]\w*)",         # Classes
-                r"(['\"]?[\w-]+['\"]?)\s*:",       # JS Keys
+                r"def\s+([A-Za-z_]\w*)",
+                r"function\s+([A-Za-z_]\w*)",
+                r"class\s+([A-Za-z_]\w*)",
+                r"(['\"]?[\w-]+['\"]?)\s*:",
             ]
         }
 
@@ -42,25 +55,24 @@ class EnterpriseDocSyncEngine:
         
         return {
             "score": score,
-            "label": "Accurate Alignment" if score > 70 else "Partial Mismatch",
+            "label": "Accurate Alignment" if score > 70 else "Partial Mismatch" if score > 30 else "Critical Mismatch",
             "summary": f"Audit of {len(found_logic)} elements complete.",
-            "detailed_issue": f"Identified {len(missing)} logic gaps.",
+            "detailed_issue": f"Identified {len(missing)} logic gaps and {len(synced)} synced segments.",
             "stats": {
                 "total_issues": len(missing),
                 "synced_terms": len(synced),
                 "breakdown": {"Terminology": 100 - score, "Logic": len(missing) * 5}
             },
-            "suggestions": [f"Document '{m}'" for m in list(missing)[:3]],
+            "suggestions": [f"Add documentation for '{m}'" for m in list(missing)[:3]],
             "visual": [len(synced), len(missing), 2]
         }
 
     def _empty_result(self):
-        return {"score": 0, "label": "No Logic", "summary": "Scanning empty.", "detailed_issue": "None", "stats": {"total_issues": 1, "synced_terms": 0, "breakdown": {"Terminology": 0, "Logic": 100}}, "suggestions": [], "visual": [0, 10, 0]}
+        return {"score": 0, "label": "No Logic", "summary": "Empty scan.", "detailed_issue": "None", "stats": {"total_issues": 1, "synced_terms": 0, "breakdown": {"Terminology": 0, "Logic": 100}}, "suggestions": [], "visual": [0, 10, 0]}
 
 def symmetric_analysis(c, d):
     return EnterpriseDocSyncEngine().perform_audit(c, d)
 
-# UTILS
 async def extract_all(b, e):
     m = {}
     if b[:4] == b'PK\x03\x04':
@@ -71,16 +83,12 @@ async def extract_all(b, e):
                         m[i.filename] = f.read().decode("utf-8", errors="ignore")
     return m
 
-# ROUTES
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "result": None})
+    content = render_dashboard(request, result=None)
+    return HTMLResponse(content=content)
 
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
-
-@app.post("/analyze")
+@app.post("/analyze", response_class=HTMLResponse)
 async def analyze(request: Request, code_file: UploadFile = File(None), doc_file: UploadFile = File(None)):
     code_ex = ['.py', '.js', '.ts', '.java', '.cpp', '.c', '.h', '.cs', '.go']
     doc_ex = ['.md', '.txt', '.rst']
@@ -104,8 +112,11 @@ async def analyze(request: Request, code_file: UploadFile = File(None), doc_file
             doc_map[doc_file.filename] = b.decode("utf-8", errors="ignore")
 
     if not code_map:
-        return templates.TemplateResponse("index.html", {"request": request, "result": {"error": "no_input"}})
+        content = render_dashboard(request, result={"error": "no_input"})
+        return HTMLResponse(content=content)
 
     res = symmetric_analysis("\n".join(code_map.values()), "\n".join(doc_map.values()))
     res.update({"code_filename": c_n, "doc_filename": d_n, "file_list": list(code_map.keys())})
-    return templates.TemplateResponse("index.html", {"request": request, "result": res})
+    
+    content = render_dashboard(request, result=res)
+    return HTMLResponse(content=content)
