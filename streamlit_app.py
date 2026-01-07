@@ -299,14 +299,14 @@ with st.sidebar:
 
 # --- MAIN PAGE (FIGMA MATCH) ---
 if st.session_state.current_page == 'dashboard':
-    st.markdown("<h1 class='main-header'>Project <span class='header-accent'>Analysis</span></h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-header'>CraftAI DocSync <span class='header-accent'>Agent</span></h1>", unsafe_allow_html=True)
     
     col_u1, col_u2 = st.columns(2)
     with col_u1:
-        st.markdown("<p style='font-size:10px; font-weight:900; text-transform:uppercase; color:#555;'>1. Project Scenario</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:24px; font-weight:900; color:#a855f7; text-transform:uppercase; margin-bottom:10px;'>Project Scenario</p>", unsafe_allow_html=True)
         code_file = st.file_uploader("Code", label_visibility="collapsed", type=['zip', 'py', 'js', 'ts', 'java', 'cs'])
     with col_u2:
-        st.markdown("<p style='font-size:10px; font-weight:900; text-transform:uppercase; color:#555;'>2. Documentation</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:24px; font-weight:900; color:#a855f7; text-transform:uppercase; margin-bottom:10px;'>Documentation</p>", unsafe_allow_html=True)
         doc_file = st.file_uploader("Docs", label_visibility="collapsed", type=['md', 'txt', 'zip'])
     
     if st.button("✨ INITIATE CONSISTENCY AUDIT"):
