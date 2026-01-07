@@ -113,7 +113,7 @@ async def analyze(request: Request, code_file: UploadFile = File(None), doc_file
             doc_map[doc_file.filename] = d_bytes.decode("utf-8", errors="ignore")
 
     if not code_map:
-        return templates.TemplateResponse("index.html", {"request": request, "result": "no_input"})
+        return templates.TemplateResponse("index.html", {"request": request, "result": {"error": "no_input"}})
 
     analysis = symmetric_analysis("\n".join(code_map.values()), "\n".join(doc_map.values()))
     analysis.update({"code_filename": c_name, "doc_filename": d_name, "file_list": list(code_map.keys())})
