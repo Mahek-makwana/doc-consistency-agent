@@ -246,6 +246,7 @@ class EnterpriseDocSyncEngine:
         
         return {
             "score": score,
+            "label": "Accurate Alignment" if score > 70 else "Partial Mismatch" if score > 30 else "Critical Mismatch",
             "synced_count": len(synced),
             "total_issues": len(missing),
             "docs_analyzed": 1,
@@ -257,7 +258,7 @@ class EnterpriseDocSyncEngine:
         }
 
     def _empty_result(self):
-        return {"score": 0, "synced_count": 0, "total_issues": 0, "docs_analyzed": 0, "terminology_score": 0, "style_score": 0, "summary_text": "No logic detected.", "file_list": [], "suggestion": "N/A"}
+        return {"score": 0, "label": "No Logic", "synced_count": 0, "total_issues": 0, "docs_analyzed": 0, "terminology_score": 0, "style_score": 0, "summary_text": "No logic detected.", "file_list": [], "suggestion": "N/A"}
 
 engine = EnterpriseDocSyncEngine()
 
