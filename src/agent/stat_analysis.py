@@ -5,147 +5,75 @@ from collections import Counter
 
 class StatisticalAnalyzer:
     """
-    Advanced Statistical Text Alignment Engine (Pure Python - Optimized for Vercel).
-    No heavy dependencies (scikit-learn/numpy) to stay under 250MB limit.
+    Enterprise-Grade Consistency Engine.
+    Provides accurate, dynamic counts for the Figma Dashboard.
     """
 
     def __init__(self):
-        self.stop_words = set([
-            'this', 'function', 'a', 'an', 'the', 'is', 'are', 'to', 'of', 'for', 
-            'in', 'with', 'it', 'and', 'from', 'into', 'that', 'which', 'who', 
-            'whose', 'whom', 'where', 'when', 'why', 'how', 'its', 'as', 'at', 
-            'by', 'be', 'been', 'being', 'can', 'could', 'do', 'does', 'did', 
-            'done', 'doing', 'has', 'have', 'had', 'having', 'will', 'would', 
-            'should', 'may', 'might', 'must', 'shall', 'should', 'about', 'above', 
-            'below', 'under', 'over', 'again', 'once', 'then', 'else', 'or', 
-            'but', 'so', 'than', 'while', 'module', 'class', 'method', 'returns',
-            'returning', 'takes', 'inputs', 'output', 'computes', 'calculates',
-            'performing', 'process', 'using', 'used', 'base', 'price'
-        ])
+        self.stop_words = set(['the', 'a', 'is', 'are', 'to', 'in', 'of', 'and', 'with', 'for', 'it', 'this', 'that'])
         
-        self.operational_map = {
-            "dist": ["distance", "euclidean", "metric", "path"],
-            "calc": ["calculate", "compute", "evaluate", "formula"],
-            "fetch": ["retrieve", "get", "load", "download"],
-            "save": ["store", "persist", "write", "export"],
-            "train": ["fit", "learn", "optimize", "model"],
-            "predict": ["infer", "forecast", "estimate", "output"],
-            "sqrt": ["root", "square", "math"],
-            "log": ["logarithm", "scale", "transform"]
+        # Categories for the "Issue Summary" bars
+        self.category_keywords = {
+            "Terminology": ["name", "term", "variable", "identifier", "call", "parameter"],
+            "Style": ["format", "structure", "clean", "indent", "comment", "docstring"],
+            "Logic": ["algorithm", "flow", "step", "calculation", "process", "sequence"]
         }
 
     def preprocess(self, text: str) -> List[str]:
-        """Cleans text and returns a list of meaningful tokens."""
         text = text.lower()
-        text = text.replace("_", " ")
-        text = re.sub(r'[()\[\]{}:,.=;\'"/-]', " ", text)
-        tokens = [t for t in text.split() if t not in self.stop_words and len(t) > 1]
-        return tokens
+        text = re.sub(r'[^a-z0-9\s_]', ' ', text)
+        return [t for t in text.split() if t not in self.stop_words and len(t) > 1]
 
     def _cosine_similarity(self, vec1: Counter, vec2: Counter) -> float:
-        """Calculates cosine similarity between two frequency vectors."""
         intersection = set(vec1.keys()) & set(vec2.keys())
         numerator = sum([vec1[x] * vec2[x] for x in intersection])
-
         sum1 = sum([val**2 for val in vec1.values()])
         sum2 = sum([val**2 for val in vec2.values()])
         denominator = math.sqrt(sum1) * math.sqrt(sum2)
-
-        if not denominator:
-            return 0.0
-        return float(numerator) / denominator
-
-    def compute_similarity(self, text1: str, text2: str) -> Dict[str, Any]:
-        if not text1.strip() or not text2.strip():
-            return {"score": 0.0, "common_words": [], "missing_in_code": [], "missing_in_doc": [], "suggestions": ["Input missing."]}
-        
-        try:
-            tokens1 = self.preprocess(text1)
-            tokens2 = self.preprocess(text2)
-            
-            vec1 = Counter(tokens1)
-            vec2 = Counter(tokens2)
-            
-            raw_sim = self._cosine_similarity(vec1, vec2)
-            # Boost score slightly for marketing feel
-            score = min(1.0, raw_sim * 1.5) if raw_sim > 0 else 0.0
-            
-            code_words = set(vec1.keys())
-            doc_words = set(vec2.keys())
-            
-            common = code_words.intersection(doc_words)
-            missing_in_code = doc_words - code_words
-            missing_in_doc = code_words - doc_words
-            
-            suggestions = []
-            # Operational Alignment Check
-            code_str = text1.lower()
-            doc_str = text2.lower()
-            for trigger, synonyms in self.operational_map.items():
-                if trigger in code_str:
-                    found = any(s in doc_str for s in synonyms) or (trigger in doc_str)
-                    if not found:
-                        suggestions.append(f"Operational Gap: Code uses '{trigger}' but docs don't mention {synonyms[0]}.")
-            
-            if score < 0.5:
-                suggestions.append("Improve vocabulary alignment between code identifiers and docstrings.")
-
-            return {
-                "score": score,
-                "common_words": sorted(list(common)),
-                "missing_in_code": sorted(list(missing_in_code)),
-                "missing_in_doc": sorted(list(missing_in_doc)),
-                "suggestions": suggestions
-            }
-        except Exception as e:
-            return {"score": 0.0, "common_words": [], "missing_in_code": [], "missing_in_doc": [], "suggestions": [str(e)]}
+        return float(numerator) / denominator if denominator else 0.0
 
     def symmetric_analysis(self, code_text: str, doc_text: str) -> Dict[str, Any]:
-        analysis = self.compute_similarity(code_text, doc_text)
-        sim_score = analysis["score"]
+        tokens_code = self.preprocess(code_text)
+        tokens_doc = self.preprocess(doc_text)
         
-        issues = {
-            "missing_code": analysis["missing_in_doc"],
-            "missing_docs": analysis["missing_in_code"],
-            "operational": [s for s in analysis["suggestions"] if "Operational" in s]
-        }
-
-        if sim_score > 0.85:
-            match_label = "Production Quality"; icon = "💎"
-            summary = "Excellent alignment. Code and documentation are synchronized perfectly."
-        elif sim_score > 0.65:
-            match_label = "High Alignment"; icon = "✅"
-            summary = "Strong alignment. Most core concepts are documented correctly."
-        elif sim_score > 0.40:
-            match_label = "Partial Alignment"; icon = "⚠️"
-            summary = "Noticeable gaps detected. Some critical code logic lacks documentation support."
-        else:
-            match_label = "Poor Alignment"; icon = "❌"
-            summary = "Critical mismatch. Documentation does not accurately reflect the source code."
-
-        detailed_summary = f"{summary} Analyzed {len(analysis['common_words'])} common terms."
+        vec_code = Counter(tokens_code)
+        vec_doc = Counter(tokens_doc)
         
+        sim_score = self._cosine_similarity(vec_code, vec_doc)
+        
+        # Calculate Real Gaps
+        code_words = set(vec_code.keys())
+        doc_words = set(vec_doc.keys())
+        
+        missing_in_docs = code_words - doc_words
+        zombie_docs = doc_words - code_words
+        
+        # Categorize Missing Items Dynamically
+        breakdown = {"Terminology": 0, "Style": 0, "Logic": 0}
+        for word in missing_in_docs:
+            if any(k in word for k in self.category_keywords["Terminology"]): breakdown["Terminology"] += 1
+            elif any(k in word for k in self.category_keywords["Style"]): breakdown["Style"] += 1
+            else: breakdown["Logic"] += 1
+
+        # Final Formatting
+        if sim_score > 0.8: status = ("Excellent Alignment", "💎", "High")
+        elif sim_score > 0.5: status = ("Moderate Alignment", "✅", "Medium")
+        else: status = ("Critical Mismatch", "❌", "Low")
+
         return {
-            "forward_match": sim_score,
-            "backward_match": sim_score,
-            "symmetric_score": sim_score,
-            "match_label": match_label,
-            "match_icon": icon,
-            "analysis_summary": detailed_summary,
-            "issue_summary": {
-                "total_issues": len(issues["missing_code"]) + len(issues["missing_docs"]) + len(issues["operational"]),
-                "categories": {
-                    "missing_in_docs": len(issues["missing_code"]),
-                    "zombie_docs": len(issues["missing_docs"]),
-                    "logic_gaps": len(issues["operational"])
-                }
+            "score": int(sim_score * 100),
+            "label": status[0],
+            "icon": status[1],
+            "health": status[2],
+            "summary": f"Audit complete. Verified {len(code_words)} logic elements against {len(doc_words)} documentation items.",
+            "stats": {
+                "total_issues": len(missing_in_docs) + len(zombie_docs),
+                "logic_gaps": breakdown["Logic"],
+                "synced_terms": len(code_words & doc_words),
+                "breakdown": breakdown
             },
-            "quick_fixes": [],
-            "visual_data": {
-                "labels": ["Common", "Code Only", "Doc Only"],
-                "values": [len(analysis["common_words"]), len(issues["missing_code"]), len(issues["missing_docs"])]
-            },
-            "details": analysis
+            "suggestions": [f"Align '{w}' in documentation" for w in list(missing_in_docs)[:5]],
+            "visual": [len(code_words & doc_words), len(missing_in_docs), len(zombie_docs)]
         }
 
 def symmetric_analysis(code_text: str, doc_text: str):
