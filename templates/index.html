@@ -70,24 +70,23 @@
 
 <body class="p-4 md:p-8">
 
-    <!-- HEADER (Figma Style) -->
+    <!-- HEADER -->
     <header class="max-w-6xl mx-auto text-center mb-12 animate-fade">
         <div
             class="inline-block px-4 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold tracking-widest uppercase mb-4 border border-indigo-500/20">
-            Professional AI Consistency Audit
+            Figma-Grade Consistency Audit
         </div>
         <h1 class="text-5xl md:text-7xl font-black mb-4"><span class="gradient-text">CraftAI</span> DocSync</h1>
-        <p class="text-slate-500 text-lg max-w-2xl mx-auto">Automated cross-language logic alignment between your code
-            repository and technical documentation.</p>
+        <p class="text-slate-500 text-lg max-w-2xl mx-auto">Deep architectural analysis of code vs content across
+            multi-language projects.</p>
     </header>
 
     <main class="max-w-6xl mx-auto space-y-12">
 
         <!-- UPLOAD SECTION -->
-        <section class="glass p-8 animate-fade" style="animation-delay: 0.2s">
+        <section class="glass p-8 animate-fade" style="animation-delay: 0.1s">
             <form action="/analyze" method="POST" enctype="multipart/form-data" id="auditForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Project ZIP / File -->
                     <div>
                         <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
                             <span class="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">📦</span>
@@ -95,16 +94,12 @@
                         </h3>
                         <div class="upload-zone rounded-3xl p-10 text-center relative h-48 flex flex-col justify-center gap-2"
                             onclick="document.getElementById('code_file').click()">
-                            <p class="text-slate-400 font-medium" id="code_label">Click to upload Project ZIP or
-                                individual script</p>
-                            <p class="text-[10px] text-slate-600 uppercase tracking-tighter">Java, Python, JS, C++, Go,
-                                etc.</p>
+                            <p class="text-slate-400 font-medium" id="code_label">Upload ZIP or Script</p>
+                            <p class="text-[10px] text-slate-600 uppercase tracking-widest">Java, Python, JS, C++</p>
                             <input type="file" name="code_file" id="code_file" class="hidden"
                                 onchange="updateLabel('code')">
                         </div>
                     </div>
-
-                    <!-- Docs ZIP / File -->
                     <div>
                         <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
                             <span class="p-2 bg-purple-500/20 rounded-lg text-purple-400">📚</span>
@@ -112,36 +107,47 @@
                         </h3>
                         <div class="upload-zone rounded-3xl p-10 text-center relative h-48 flex flex-col justify-center gap-2"
                             onclick="document.getElementById('doc_file').click()">
-                            <p class="text-slate-400 font-medium" id="doc_label">Upload Docs ZIP or separate .md files
+                            <p class="text-slate-400 font-medium" id="doc_label">Upload Docs ZIP or .md</p>
+                            <p class="text-[10px] text-slate-600 uppercase tracking-widest">Automated extraction active
                             </p>
-                            <p class="text-[10px] text-slate-600 uppercase tracking-tighter">Markdown, Text, RST</p>
                             <input type="file" name="doc_file" id="doc_file" class="hidden"
                                 onchange="updateLabel('doc')">
                         </div>
                     </div>
                 </div>
-
-                <button type="submit"
-                    class="w-full mt-8 btn-gradient py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
-                    🚀 INITIATE CONSISTENCY AUDIT
-                </button>
+                <button type="submit" class="w-full mt-8 btn-gradient py-4 rounded-2xl font-black text-xl">🚀 EXECUTE
+                    DETAILED ANALYSIS</button>
             </form>
         </section>
 
         {% if result %}
-        <!-- REPORT DASHBOARD (The 8 Key Sections) -->
+        <!-- REPORT DASHBOARD -->
         <section class="space-y-8 animate-fade">
             <div class="flex items-center justify-between">
                 <h2 class="text-3xl font-black">{{ result.icon }} {{ result.label }} Report</h2>
-                <div class="text-4xl font-black gradient-text">{{ result.score }}%</div>
+                <div class="text-4xl font-black gradient-text">{{ result.score }}% Sync</div>
             </div>
 
-            <!-- GRID OF INSIGHTS -->
+            <!-- GRID -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- 1. ANALYSIS SUMMARY -->
+                <!-- 1. ANALYSIS SUMMARY & DETAILED LOGS -->
                 <div class="glass p-6 md:col-span-2">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">1. Analysis Summary</h4>
-                    <p class="text-slate-300 leading-relaxed">{{ result.summary }}</p>
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">1. Analysis Details &
+                        Logs</h4>
+                    <p class="text-slate-300 mb-6 bg-indigo-500/5 p-4 rounded-xl border border-indigo-500/10">{{
+                        result.summary }}</p>
+
+                    <div class="space-y-2">
+                        <p class="text-xs font-bold text-slate-400">System Logs:</p>
+                        <div class="text-[11px] font-mono text-slate-500 bg-black/40 p-4 rounded-lg">
+                            {% for log in result.analysis_logs %}
+                            <div class="mb-1 text-emerald-500/80">√ {{ log }}</div>
+                            {% endfor %}
+                            {% for error in result.parsing_errors %}
+                            <div class="mb-1 text-red-500/80">× {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 2. STATISTIC REPORT -->
@@ -149,92 +155,116 @@
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">2. Statistic Report</h4>
                     <div class="space-y-4">
                         <div class="flex justify-between border-b border-white/5 pb-2">
-                            <span class="text-slate-400">Files Analyzed</span>
+                            <span class="text-slate-400">Files Detected</span>
                             <span class="font-bold">{{ result.stats.files }}</span>
                         </div>
                         <div class="flex justify-between border-b border-white/5 pb-2">
-                            <span class="text-slate-400">Linguistic Sync</span>
+                            <span class="text-slate-400">Logic Score</span>
                             <span class="font-bold">{{ result.score }}%</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Structural Gaps</span>
-                            <span class="font-bold text-red-400">{{ result.stats.missing_in_docs }}</span>
+                        <div class="max-h-40 overflow-y-auto mt-4 px-2 scrollbar-thin">
+                            <p class="text-[10px] text-slate-500 mb-2 font-bold">Detected Files:</p>
+                            {% for f in result.files_list %}
+                            <div class="text-[9px] text-slate-400 truncate mb-1 bg-white/5 p-1 rounded">📄 {{ f }}</div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. ISSUE SUMMARY -->
+                <!-- 3. ISSUE SUMMARY & 4. ISSUE SUGGESTED -->
                 <div class="glass p-6">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">3. Issue Summary</h4>
-                    <div class="space-y-2">
-                        <div class="flex items-center gap-2 text-red-400">
-                            <span>🛑</span>
-                            <span>{{ result.stats.logic_gaps }} Logic Gaps Detected</span>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-red-500/5 rounded-lg border border-red-500/10">
+                            <p class="text-[10px] text-slate-500">Logic Gaps</p>
+                            <p class="text-lg font-bold text-red-400">{{ result.stats.logic_gaps }}</p>
                         </div>
-                        <div class="flex items-center gap-2 text-orange-400">
-                            <span>⚠️</span>
-                            <span>{{ result.stats.missing_in_docs }} Undocumented Items</span>
+                        <div class="p-3 bg-orange-500/5 rounded-lg border border-orange-500/10">
+                            <p class="text-[10px] text-slate-500">Unmapped Symbols</p>
+                            <p class="text-lg font-bold text-orange-400">{{ result.stats.missing_in_docs }}</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- 4. ISSUE SUGGESTED -->
                 <div class="glass p-6 md:col-span-2">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">4. Issue Suggested</h4>
-                    {% if result.missing_list %}
-                    <div class="flex flex-wrap gap-2">
-                        {% for item in result.missing_list %}
-                        <span
-                            class="px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg">Missing:
-                            {{ item }}</span>
-                        {% endfor %}
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">4. Issue Suggested
+                        (Specific Gaps)</h4>
+                    <div class="max-h-60 overflow-y-auto pr-2 scrollbar-thin">
+                        {% if result.detailed_missing %}
+                        <table class="w-full text-left">
+                            <thead class="text-[10px] text-slate-500">
+                                <tr>
+                                    <th class="pb-2">Symbol</th>
+                                    <th class="pb-2">Source File</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-xs">
+                                {% for item in result.detailed_missing %}
+                                <tr class="border-t border-white/5">
+                                    <td class="py-2 text-red-400 font-mono">{{ item.name }}</td>
+                                    <td class="py-2 text-slate-500 truncate">{{ item.file }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <p class="text-emerald-400">No missing symbols detected.</p>
+                        {% endif %}
                     </div>
-                    {% else %}
-                    <p class="text-emerald-400">No major issues suggested. Documentation is healthy.</p>
-                    {% endif %}
                 </div>
 
                 <!-- 5. LOCAL ANALYSIS / 6. QUICK FIX -->
                 <div class="glass p-6">
                     <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">5. Local Analysis</h4>
-                    <p class="text-slate-400">Project structure verified against cross-language syntax rules.</p>
+                    <p class="text-slate-400 text-sm">Automated scanner matched syntax trees against {{
+                        result.stats.files }} local artifacts.</p>
                 </div>
                 <div class="glass p-6 md:col-span-2">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">6. Quick Fix</h4>
-                    <div class="bg-black/50 p-4 rounded-xl border border-white/5">
-                        <code class="text-indigo-300 text-sm"># Missing Overview<br>
-                        {% for item in result.missing_list[:2] %}
-                        ## {{ item }}<br>Document this logic module immediately.<br>
-                        {% endfor %}
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">6. Quick Fix Script</h4>
+                    <div class="bg-black/80 p-4 rounded-xl border border-white/10 overflow-x-auto">
+                        <code class="text-indigo-300 text-[10px] whitespace-pre-wrap"># RECOMENDED DOC ADDITIONS
+{% for item in result.detailed_missing[:3] %}
+## {{ item.name }}
+- Found in: `{{ item.file }}`
+- Fix: Add description to documentation.
+{% endfor %}
                         </code>
                     </div>
                 </div>
 
                 <!-- 7. VISUAL SUMMARY -->
-                <div class="glass p-6 md:col-span-3 flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-full md:w-1/2">
-                        <h4
-                            class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-8 text-center md:text-left">
-                            7. Visual Summary (Alignment Health)</h4>
-                        <canvas id="healthChart" height="200"></canvas>
-                    </div>
-                    <div class="w-full md:w-1/2 space-y-4">
-                        <div class="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
-                            <h5 class="font-bold text-indigo-400">Semantic Overlap</h5>
-                            <p class="text-sm text-slate-500">How much your documentation explains your logic in human
-                                terms.</p>
+                <div class="glass p-6 md:col-span-3 flex flex-col md:flex-row items-center gap-12">
+                    <div class="w-full md:w-1/3 text-center">
+                        <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-8">7. Visual Summary
+                        </h4>
+                        <div class="relative inline-block">
+                            <canvas id="healthChart" width="200" height="200"></canvas>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-2xl font-black gradient-text">{{ result.score }}%</span>
+                                <span class="text-[8px] text-slate-600 uppercase font-bold">Health</span>
+                            </div>
                         </div>
-                        <!-- 8. EXPORT ANALYSIS -->
-                        <div class="p-6 bg-white/5 rounded-2xl flex flex-col gap-4">
-                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest">8. Export Analysis
-                            </h4>
-                            <div class="flex gap-4">
-                                <button onclick="exportDoc('txt')"
-                                    class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold">Word
-                                    (.doc)</button>
-                                <button onclick="exportDoc('txt')"
-                                    class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold">Text
-                                    (.txt)</button>
+                    </div>
+                    <div class="w-full md:w-2/3 space-y-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+                                <p class="text-xs font-bold text-indigo-400">Overlap</p>
+                                <div class="h-2 bg-slate-800 rounded-full mt-2 overflow-hidden">
+                                    <div class="h-full bg-indigo-500" style="width:{{ result.score }}%"></div>
+                                </div>
+                            </div>
+                            <!-- 8. EXPORT -->
+                            <div class="p-6 bg-white/5 rounded-2xl border border-white/10 flex flex-col justify-center">
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 text-center">
+                                    8. Export Report</h4>
+                                <div class="flex gap-4">
+                                    <button onclick="exportDoc('txt')"
+                                        class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">Word
+                                        (.doc)</button>
+                                    <button onclick="exportDoc('txt')"
+                                        class="flex-1 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs font-bold">Text
+                                        (.txt)</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -244,8 +274,8 @@
         {% endif %}
     </main>
 
-    <footer class="mt-20 text-center pb-12 text-slate-600 text-xs tracking-widest">
-        &copy; 2026 CRAFT AI • PROFESSIONAL CONSISTENCY AGENT
+    <footer class="mt-20 text-center pb-12 text-slate-700 text-[10px] tracking-[4px] uppercase">
+        DocSync Automated Intelligence v2.0
     </footer>
 
     <script>
@@ -256,32 +286,27 @@
                 document.getElementById(id + '_label').classList.replace('text-slate-400', 'text-indigo-400');
             }
         }
-
         {% if result %}
         const ctx = document.getElementById('healthChart').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Common', 'Logic Only', 'Doc Only'],
+                labels: ['Matched', 'Missing in Doc', 'Zombie Doc'],
                 datasets: [{
                     data: {{ result.visual | tojson }},
-            backgroundColor: ['#6366f1', '#ef4444', '#10b981'],
+            backgroundColor: ['#6366f1', '#f87171', '#34d399'],
             borderWidth: 0,
-            hoverOffset: 20
+            cutout: '85%'
         }]
             },
-            options: {
-            plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Outfit', size: 12 } } } },
-            cutout: '80%'
-        }
+            options: { plugins: { legend: { display: false } } }
         });
-
         function exportDoc(ext) {
             const blob = new Blob([`{{ result.export_raw | safe }}`], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `craftai_report_${new Date().getTime()}.${ext}`;
+            a.download = `docsync_audit_${new Date().getTime()}.${ext}`;
             a.click();
         }
         {% endif %}

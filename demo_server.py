@@ -43,58 +43,82 @@ async def analyze(
 
     code_map = {}
     doc_map = {}
+    analysis_logs = []
 
     # 1. Process Code Input
     if code_file and code_file.filename:
         c_bytes = await code_file.read()
+        analysis_logs.append(f"Detected Code Source: {code_file.filename}")
         if code_file.filename.lower().endswith('.zip'):
-            code_map = await extract_from_zip(c_bytes, code_ex)
+            extracted_code = await extract_from_zip(c_bytes, code_ex)
+            code_map.update(extracted_code)
+            analysis_logs.append(f"Extracted {len(extracted_code)} code files from ZIP.")
             # Peek for docs in same zip
-            doc_map.update(await extract_from_zip(c_bytes, doc_ex))
+            extracted_docs = await extract_from_zip(c_bytes, doc_ex)
+            doc_map.update(extracted_docs)
+            if extracted_docs:
+                analysis_logs.append(f"Found {len(extracted_docs)} documentation files inside Project ZIP.")
         else:
             code_map[code_file.filename] = c_bytes.decode("utf-8", errors="ignore")
 
     # 2. Process Doc Input
     if doc_file and doc_file.filename:
         d_bytes = await doc_file.read()
+        analysis_logs.append(f"Detected Doc Source: {doc_file.filename}")
         if doc_file.filename.lower().endswith('.zip'):
-            doc_map.update(await extract_from_zip(d_bytes, doc_ex))
+            extracted = await extract_from_zip(d_bytes, doc_ex)
+            doc_map.update(extracted)
+            analysis_logs.append(f"Extracted {len(extracted)} external documentation files.")
         else:
             doc_map[doc_file.filename] = d_bytes.decode("utf-8", errors="ignore")
 
     if not code_map:
         return templates.TemplateResponse("index.html", {"request": request, "result": "no_input"})
 
-    # 3. Structural Engine (Multi-Language)
-    code_elements = {"functions": set(), "classes": set()}
+    # 3. Structural Engine (Multi-Language) & Error Detection
+    code_elements = {"functions": {}, "classes": {}} # name -> filename mapping
+    parsing_errors = []
+
     for fname, content in code_map.items():
         if fname.endswith('.py'):
             try:
                 tree = ast.parse(content)
                 for node in ast.walk(tree):
-                    if isinstance(node, (ast.FunctionDef, ast.ClassDef)): code_elements["functions" if isinstance(node, ast.FunctionDef) else "classes"].add(node.name)
-            except: pass
+                    if isinstance(node, ast.FunctionDef):
+                        code_elements["functions"][node.name] = fname
+                    if isinstance(node, ast.ClassDef):
+                        code_elements["classes"][node.name] = fname
+            except Exception as e:
+                parsing_errors.append(f"Syntax Error in {fname}: {str(e)}")
         else:
             # Generic Scanner
             classes = re.findall(r'class\s+([A-Za-z_][A-Za-z0-9_]*)', content)
-            code_elements["classes"].update(classes)
+            for c in classes: code_elements["classes"][c] = fname
+            
             funcs = re.findall(r'(?:public|private|static|\s)+[\w\<\>]+\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(', content)
-            code_elements["functions"].update(funcs)
+            for f in funcs: code_elements["functions"][f] = fname
 
     # 4. Doc Engine
     doc_elements = {"items": set()}
-    for content in doc_map.values():
+    for fname, content in doc_map.items():
         items = re.findall(r'(?:#+|\*\*|`)\s*([\w\.]+)', content)
         doc_elements["items"].update(items)
 
-    missing_items = (code_elements["functions"] | code_elements["classes"]) - doc_elements["items"]
+    # Calculate Gaps with File Origins
+    missing_items = []
+    total_found_in_code = list(code_elements["functions"].keys()) + list(code_elements["classes"].keys())
+    
+    for item in total_found_in_code:
+        if item not in doc_elements["items"]:
+            origin = code_elements["functions"].get(item) or code_elements["classes"].get(item)
+            missing_items.append({"name": item, "file": origin})
 
     # 5. Semantic Analysis
     final_code_text = "\n".join(code_map.values())
     final_doc_text = "\n".join(doc_map.values())
     analysis = symmetric_analysis(final_code_text, final_doc_text)
 
-    # 6. Build Result for "Figma" Frontend
+    # 6. Build Detailed Result
     result = {
         "score": int(analysis['symmetric_score'] * 100),
         "label": analysis['match_label'],
@@ -106,11 +130,15 @@ async def analyze(
             "missing_in_docs": len(missing_items)
         },
         "visual": analysis['visual_data']['values'],
-        "missing_list": sorted(list(missing_items))[:10],
+        "detailed_missing": missing_items[:15], # Show more details
+        "parsing_errors": parsing_errors,
+        "analysis_logs": analysis_logs,
+        "files_list": list(code_map.keys()) + list(doc_map.keys()),
         "export_raw": f"Score: {analysis['symmetric_score']}\nStatus: {analysis['match_label']}\n{analysis['analysis_summary']}"
     }
 
     return templates.TemplateResponse("index.html", {"request": request, "result": result})
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
