@@ -243,7 +243,7 @@
                                     <th class="py-6">Action</th>
                                 </tr>
                             </thead>
-                            <tbody class="text-sm">
+                            <tbody class="text-sm" id="report-table-body">
                                 {% for entry in history %}
                                 <tr class="border-b border-white/5">
                                     <td class="py-6 font-bold">{{ entry.project }}</td>
@@ -271,7 +271,7 @@
             <div id="view-history" class="view-section">
                 <div class="px-12 py-12">
                     <h1 class="text-6xl font-black mb-8">Audit <span class="text-indigo-400">History</span></h1>
-                    <div class="space-y-6">
+                    <div class="space-y-6" id="history-list">
                         {% for entry in history %}
                         <div class="glass-card flex items-center justify-between p-8 border-l-4 border-indigo-500">
                             <div class="flex items-center gap-8">
@@ -305,16 +305,75 @@
     <script>
         lucide.createIcons();
 
+        // STORAGE: Saves audits to Browser for persistent History/Reports
+        function saveAudit(data) {
+            let history = JSON.parse(localStorage.getItem('audit_history') || '[]');
+            history.unshift(data);
+            if (history.length > 10) history.pop();
+            localStorage.setItem('audit_history', JSON.stringify(history));
+        }
+
+        function renderData() {
+            const history = JSON.parse(localStorage.getItem('audit_history') || '[]');
+
+            // 1. Render Reports Table
+            const table = document.getElementById('report-table-body');
+            if (table) {
+                if (history.length === 0) {
+                    table.innerHTML = '<tr><td colspan="4" class="py-20 text-center text-gray-500 font-bold uppercase opacity-30">No reports generated yet</td></tr>';
+                } else {
+                    table.innerHTML = history.map(e => `
+                        <tr class="border-b border-white/5">
+                            <td class="py-6 font-bold text-gray-300">${e.project}</td>
+                            <td class="py-6"><span class="px-4 py-1.5 rounded-full bg-indigo-500/20 text-indigo-400 font-black">${e.score}%</span></td>
+                            <td class="py-6 text-gray-400 text-[10px] font-black uppercase tracking-widest">${e.status}</td>
+                            <td class="py-6"><button class="text-indigo-400 font-black hover:text-white transition-all text-[10px] uppercase">Download</button></td>
+                        </tr>
+                    `).join('');
+                }
+            }
+
+            // 2. Render History List
+            const list = document.getElementById('history-list');
+            if (list) {
+                if (history.length === 0) {
+                    list.innerHTML = '<div class="text-center py-40 opacity-20"><i data-lucide="clock" class="w-10 h-10 mx-auto mb-4"></i><p class="text-sm font-black uppercase">No Data Available</p></div>';
+                } else {
+                    list.innerHTML = history.map((e, i) => `
+                        <div class="glass-card flex items-center justify-between p-8 border-l-4 border-indigo-500 mb-6 group hover:translate-x-2 transition-all cursor-default">
+                            <div class="flex items-center gap-8">
+                                <div class="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 font-black">#${i + 1}</div>
+                                <div>
+                                    <h3 class="text-lg font-black text-white uppercase">${e.project}</h3>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">TIMESTAMP: ${e.timestamp}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-3xl font-black text-indigo-400">${e.score}%</p>
+                                <p class="text-[9px] text-gray-500 font-black uppercase">CONSISTENCY</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+            lucide.createIcons();
+        }
+
         function showView(viewName) {
-            // Toggle Sections
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + viewName).classList.add('active');
+            // Toggle Visuals
+            document.querySelectorAll('.view-section').forEach(v => {
+                v.classList.remove('active');
+                v.style.display = 'none';
+            });
+            const target = document.getElementById('view-' + viewName);
+            target.classList.add('active');
+            target.style.display = 'block';
 
-            // Toggle Sidebar Switch
+            // Sidebar Highlight
             document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active', 'text-white'));
-            document.getElementById('nav-' + viewName).classList.add('active');
+            document.getElementById('nav-' + viewName).classList.add('active', 'text-white');
 
-            // Re-init icons to be safe
+            if (viewName !== 'dashboard') renderData();
             lucide.createIcons();
         }
 
@@ -326,12 +385,25 @@
             }
         }
 
+        // Automatic Persistent Logging
+        {% if result %}
+        const resultData = {
+            project: "{{ result.file_list[0] if result.file_list else 'Project Source' }}",
+            score: {{ result.score }},
+        status: "{{ result.label }}",
+            timestamp: new Date().toLocaleString()
+            };
+        saveAudit(resultData);
+        {% endif %}
+
+        window.onload = function () { renderData(); };
+
         {% if result %}
         const ctx = document.getElementById('healthChart').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Synced', 'Logic Gaps', 'Docs Gaps'],
+                labels: ['Synced', 'Gaps', 'Orphans'],
                 datasets: [{
                     data: {{ result.visual | tojson }},
             backgroundColor: ['#6366f1', '#f472b6', '#3b82f6'],
