@@ -1,4 +1,3 @@
-fastapi
-jinja2
-python-multipart
-uvicorn
+streamlit
+pandas
+plotly
