@@ -1,7 +1,6 @@
-from fastapi import FastAPI, Request, File, UploadFile, Form
+from fastapi import FastAPI, Request, File, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
 import zipfile
@@ -10,10 +9,10 @@ import ast
 import re
 from src.agent.stat_analysis import symmetric_analysis
 
-app = FastAPI(title="CraftAI - DocSync Professional")
+app = FastAPI(title="CraftAI - DocSync Agent")
 templates = Jinja2Templates(directory="templates")
 
-# --- UTILS ---
+# --- CORE UTILS ---
 async def extract_from_zip(zip_content, target_extensions):
     file_map = {}
     try:
@@ -27,7 +26,6 @@ async def extract_from_zip(zip_content, target_extensions):
         print(f"Zip extraction error: {e}")
     return file_map
 
-# --- CORE ENDPOINT ---
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "result": None})
@@ -38,87 +36,45 @@ async def analyze(
     code_file: UploadFile = File(None),
     doc_file: UploadFile = File(None)
 ):
-    code_ex = ['.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h', '.cs', '.go', '.rs', '.php', '.rb']
-    doc_ex = ['.md', '.txt', '.rst', '.html']
+    code_ex = ['.py', '.js', '.java', '.cpp', '.cs', '.go']
+    doc_ex = ['.md', '.txt', '.rst']
 
     code_map = {}
     doc_map = {}
-    analysis_logs = []
-
-    # 1. Process Code Input
+    
+    # 1. Extraction Logic (Multi-Doc Support)
     if code_file and code_file.filename:
         c_bytes = await code_file.read()
-        analysis_logs.append(f"Detected Code Source: {code_file.filename}")
         if code_file.filename.lower().endswith('.zip'):
-            extracted_code = await extract_from_zip(c_bytes, code_ex)
-            code_map.update(extracted_code)
-            analysis_logs.append(f"Extracted {len(extracted_code)} code files from ZIP.")
-            # Peek for docs in same zip
-            extracted_docs = await extract_from_zip(c_bytes, doc_ex)
-            doc_map.update(extracted_docs)
-            if extracted_docs:
-                analysis_logs.append(f"Found {len(extracted_docs)} documentation files inside Project ZIP.")
+            code_map = await extract_from_zip(c_bytes, code_ex)
+            # Find docs inside code if not separate
+            if not doc_file or not doc_file.filename:
+                doc_map.update(await extract_from_zip(c_bytes, doc_ex))
         else:
             code_map[code_file.filename] = c_bytes.decode("utf-8", errors="ignore")
 
-    # 2. Process Doc Input
     if doc_file and doc_file.filename:
         d_bytes = await doc_file.read()
-        analysis_logs.append(f"Detected Doc Source: {doc_file.filename}")
         if doc_file.filename.lower().endswith('.zip'):
-            extracted = await extract_from_zip(d_bytes, doc_ex)
-            doc_map.update(extracted)
-            analysis_logs.append(f"Extracted {len(extracted)} external documentation files.")
+            doc_map.update(await extract_from_zip(d_bytes, doc_ex))
         else:
             doc_map[doc_file.filename] = d_bytes.decode("utf-8", errors="ignore")
 
     if not code_map:
         return templates.TemplateResponse("index.html", {"request": request, "result": "no_input"})
 
-    # 3. Structural Engine (Multi-Language) & Error Detection
-    code_elements = {"functions": {}, "classes": {}} # name -> filename mapping
-    parsing_errors = []
-
-    for fname, content in code_map.items():
-        if fname.endswith('.py'):
-            try:
-                tree = ast.parse(content)
-                for node in ast.walk(tree):
-                    if isinstance(node, ast.FunctionDef):
-                        code_elements["functions"][node.name] = fname
-                    if isinstance(node, ast.ClassDef):
-                        code_elements["classes"][node.name] = fname
-            except Exception as e:
-                parsing_errors.append(f"Syntax Error in {fname}: {str(e)}")
-        else:
-            # Generic Scanner
-            classes = re.findall(r'class\s+([A-Za-z_][A-Za-z0-9_]*)', content)
-            for c in classes: code_elements["classes"][c] = fname
-            
-            funcs = re.findall(r'(?:public|private|static|\s)+[\w\<\>]+\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(', content)
-            for f in funcs: code_elements["functions"][f] = fname
-
-    # 4. Doc Engine
-    doc_elements = {"items": set()}
-    for fname, content in doc_map.items():
-        items = re.findall(r'(?:#+|\*\*|`)\s*([\w\.]+)', content)
-        doc_elements["items"].update(items)
-
-    # Calculate Gaps with File Origins
-    missing_items = []
-    total_found_in_code = list(code_elements["functions"].keys()) + list(code_elements["classes"].keys())
+    # 2. Consistency Analysis (Terminology & Logic)
+    final_code = "\n".join(code_map.values())
+    final_doc = "\n".join(doc_map.values())
     
-    for item in total_found_in_code:
-        if item not in doc_elements["items"]:
-            origin = code_elements["functions"].get(item) or code_elements["classes"].get(item)
-            missing_items.append({"name": item, "file": origin})
-
-    # 5. Semantic Analysis
-    final_code_text = "\n".join(code_map.values())
-    final_doc_text = "\n".join(doc_map.values())
-    analysis = symmetric_analysis(final_code_text, final_doc_text)
-
-    # 6. Build Detailed Result
+    # Extract terms for Terminology Check
+    code_terms = set(re.findall(r'\b[a-z_][a-z0-9_]{3,}\b', final_code.lower()))
+    doc_terms = set(re.findall(r'\b[a-z_][a-z0-9_]{3,}\b', final_doc.lower()))
+    
+    # Semantic Check
+    analysis = symmetric_analysis(final_code, final_doc)
+    
+    # 3. Create Comprehensive Result
     result = {
         "score": int(analysis['symmetric_score'] * 100),
         "label": analysis['match_label'],
@@ -126,15 +82,13 @@ async def analyze(
         "summary": analysis['analysis_summary'],
         "stats": {
             "files": len(code_map) + len(doc_map),
-            "logic_gaps": analysis['issue_summary']['categories']['logic_gaps'],
-            "missing_in_docs": len(missing_items)
+            "common_terms": len(code_terms & doc_terms),
+            "logic_gaps": analysis['issue_summary']['categories']['logic_gaps']
         },
         "visual": analysis['visual_data']['values'],
-        "detailed_missing": missing_items[:15], # Show more details
-        "parsing_errors": parsing_errors,
-        "analysis_logs": analysis_logs,
-        "files_list": list(code_map.keys()) + list(doc_map.keys()),
-        "export_raw": f"Score: {analysis['symmetric_score']}\nStatus: {analysis['match_label']}\n{analysis['analysis_summary']}"
+        "suggestions": analysis['details']['suggestions'][:3],
+        "file_list": list(code_map.keys())[:5],
+        "export_raw": f"Score: {analysis['symmetric_score']}\n{analysis['analysis_summary']}"
     }
 
     return templates.TemplateResponse("index.html", {"request": request, "result": result})
