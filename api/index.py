@@ -38,22 +38,20 @@ def get_html():
             .btn-initiate:hover {{ transform: scale(1.01); box-shadow: 0 6px 20px rgba(99,102,241,0.5); }}
             .progress-bar {{ height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }}
             .progress-fill {{ height: 100%; border-radius: 4px; transition: 1s ease-in-out; }}
-            .view-section {{ display: none; height: calc(100vh - 40px); overflow-y: auto; padding-bottom: 50px; }}
+            .view-section {{ display: none; height: calc(100vh - 40px); overflow-y: auto; padding-bottom: 80px; }}
             .view-section.active {{ display: block; }}
+            .preview-box {{ background: #000; border-radius: 16px; padding: 20px; font-family: monospace; font-size: 11px; color: #aaa; overflow-x: auto; max-height: 250px; border: 1px solid #222; }}
             ::-webkit-scrollbar {{ width: 6px; }}
             ::-webkit-scrollbar-thumb {{ background: #222; border-radius: 10px; }}
             
-            /* Report Print styles */
             @media print {{
                 body * {{ visibility: hidden; }}
                 #print-area, #print-area * {{ visibility: visible; }}
                 #print-area {{ position: absolute; left: 0; top: 0; width: 100% !important; background: white !important; color: black !important; }}
-                .glass-card {{ background: #f9f9f9 !important; border: 1px solid #ddd !important; color: black !important; }}
             }}
         </style>
     </head>
     <body class="flex min-h-screen">
-        <!-- Sidebar -->
         <aside class="w-72 border-r border-white/10 p-8 flex flex-col gap-8 hidden md:flex">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center font-black text-2xl">✨</div>
@@ -67,12 +65,11 @@ def get_html():
                 <div onclick="showView('reports')" class="nav-btn nav-link" data-view="reports"><i data-lucide="file-text"></i> Reports</div>
                 <div onclick="showView('history')" class="nav-btn nav-link" data-view="history"><i data-lucide="clock"></i> History</div>
             </nav>
-            <div class="mt-auto pt-8 border-t border-white/5 text-[10px] font-black uppercase text-neutral-600">Enterprise Access v2.0</div>
+            <div class="mt-auto pt-8 border-t border-white/5 text-[10px] font-black uppercase text-neutral-600">Enterprise Access v2.1</div>
         </aside>
 
         <main class="flex-1 p-12 max-w-7xl mx-auto w-full relative">
             
-            <!-- VIEW: DASHBOARD -->
             <section id="dashboard" class="view-section active">
                 <h1 class="main-header mb-12">CraftAI DocSync <span class="header-accent">Agent</span></h1>
                 
@@ -101,12 +98,23 @@ def get_html():
                     ✨ Initiate Consistency Audit
                 </button>
 
-                <div id="results-area" class="grid grid-cols-1 md:grid-cols-4 gap-8 opacity-0 transition-opacity duration-500">
+                <div id="results-area" class="grid grid-cols-1 md:grid-cols-4 gap-8 opacity-0 transition-opacity duration-500 mb-12">
                     <!-- Cards injected here -->
+                </div>
+
+                <!-- NEW: FILE VISIBILITY SECTION -->
+                <div id="visibility-area" class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 hidden">
+                    <div class="glass-card">
+                        <h4 class="text-xs font-black text-indigo-400 uppercase tracking-[0.2em] mb-4">Analyzed Source Code</h4>
+                        <div id="code-preview" class="preview-box whitespace-pre"></div>
+                    </div>
+                    <div class="glass-card">
+                        <h4 class="text-xs font-black text-indigo-400 uppercase tracking-[0.2em] mb-4">Analyzed Documentation</h4>
+                        <div id="doc-preview" class="preview-box whitespace-pre"></div>
+                    </div>
                 </div>
             </section>
 
-            <!-- VIEW: REPORTS -->
             <section id="reports" class="view-section">
                 <h1 class="main-header mb-12">Detailed <span class="header-accent">Reports</span></h1>
                 <div id="latest-report-container" class="space-y-8">
@@ -114,7 +122,6 @@ def get_html():
                 </div>
             </section>
 
-            <!-- VIEW: HISTORY -->
             <section id="history" class="view-section">
                 <h1 class="main-header mb-12">Audit <span class="header-accent">History</span></h1>
                 <div class="glass-card overflow-hidden">
@@ -136,7 +143,6 @@ def get_html():
             </section>
         </main>
 
-        <!-- HIDDEN PRINT AREA -->
         <div id="print-area" class="hidden p-20 bg-white text-black"></div>
 
         <script>
@@ -158,7 +164,6 @@ def get_html():
             function fileSelected(input, targetId) {{
                 if (input.files[0]) {{
                     document.getElementById(targetId).textContent = "Selected: " + input.files[0].name;
-                    document.getElementById(targetId).classList.replace('text-neutral-500', 'text-indigo-400');
                 }}
             }}
 
@@ -197,6 +202,13 @@ def get_html():
             function renderResults(data) {{
                 const area = document.getElementById('results-area');
                 area.style.opacity = '0';
+                
+                // Show File Visibility
+                const visArea = document.getElementById('visibility-area');
+                visArea.classList.remove('hidden');
+                document.getElementById('code-preview').textContent = data.code_snippet;
+                document.getElementById('doc-preview').textContent = data.doc_snippet || "No documentation provided.";
+
                 setTimeout(() => {{
                     area.innerHTML = `
                         <div class="glass-card">
@@ -350,7 +362,7 @@ def get_html():
                         </ul>
 
                         <div style="margin-top: 60px; border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #999; text-align: center;">
-                            CraftAI DocSync Agent v2.0 - Corporate Audit Output
+                            CraftAI DocSync Agent v2.1 - Corporate Audit Output
                         </div>
                     </div>
                 `;
@@ -374,19 +386,28 @@ class Engine:
         found = {f for f in found if len(f) > 2}
         comments = " ".join(re.findall(r"(?:#|//|/\*|'''|\"\"\")(.*?)(?:\*/|'''|\"\"\"|\n|$)", c, re.DOTALL))
         pool = (d + " " + comments).lower()
+        
+        c_prev = c[:800] + "..." if len(c) > 800 else c
+        d_prev = d[:800] + "..." if len(d) > 800 else d
+
         if not found:
-            return {"score": 0, "label": "No Logic Found", "stats": {"issues": 0, "synced": 0}, "detail": "Empty project input.", "visual": [0, 1], "detailed_issues": ["Critical: Analysis empty."]}
+            return {
+                "score": 0, "label": "No Logic Found", "stats": {"issues": 0, "synced": 0}, 
+                "detail": "Empty project input.", "visual": [0, 1], "detailed_issues": ["Critical: Analysis empty."],
+                "code_snippet": c_prev, "doc_snippet": d_prev
+            }
         synced = {l for l in found if l.lower() in pool}
         missing = found - synced
         score = int((len(synced)/len(found))*100)
         issue_list = [f"Documentation missing for '{m}'" for m in list(missing)[:10]]
         return {
             "score": score,
-            "label": "Accurate Alignment" if score > 75 else "Partial Mismatch" if score > 35 else "Critical Mismatch",
+            "label": "Accurate Alignment" if score > 75 else "Partial Mismatch",
             "stats": {"issues": len(missing), "synced": len(synced)},
             "detail": f"Identified {len(found)} logic units. {len(missing)} are undocumented.",
             "visual": [len(synced), len(missing)],
-            "detailed_issues": issue_list
+            "detailed_issues": issue_list,
+            "code_snippet": c_prev, "doc_snippet": d_prev
         }
 
 engine = Engine()
@@ -403,9 +424,13 @@ async def analyze(code_file: UploadFile = File(None), doc_file: UploadFile = Fil
         if code_file.filename.endswith('.zip'):
             with zipfile.ZipFile(io.BytesIO(buf)) as z:
                 for n in z.namelist():
-                    if n.endswith(('.py','.js','.ts')): c_text += z.read(n).decode(errors='ignore')
+                    if n.endswith(('.py','.js','.ts')): c_text += z.read(n).decode(errors='ignore') + "\n"
         else: c_text = buf.decode(errors='ignore')
     if doc_file:
         buf = await doc_file.read()
         d_text = buf.decode(errors='ignore')
     return engine.audit(c_text, d_text)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
