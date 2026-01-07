@@ -2,63 +2,108 @@ import streamlit as st
 import re
 import zipfile
 import io
-import pandas as pd
 from typing import Dict, Any, List, Set
 from datetime import datetime
 
 # --- CONFIGURATION ---
 st.set_page_config(
-    page_title="CraftAI DocSync | Enterprise",
+    page_title="CraftAI DocSync Dashboard",
     page_icon="✨",
     layout="wide",
-    initial_sidebar_state="expanded",
 )
 
-# --- STYLING ---
+# --- REFINED CSS (Matching Uploaded Design) ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap');
     
-    html, body, [class*="css"] {
+    .stApp {
+        background-color: #000000;
+        color: #ffffff;
         font-family: 'Outfit', sans-serif;
     }
     
-    .stApp {
-        background-color: #050505;
-        color: #ffffff;
-    }
-    
-    .main-header {
-        font-size: 4rem;
-        font-weight: 900;
-        letter-spacing: -2px;
-        margin-bottom: 2rem;
-        background: linear-gradient(to right, #6366f1, #a855f7);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-    
-    .glass-card {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        padding: 24px;
-        margin-bottom: 20px;
-    }
-    
-    .metric-value {
+    /* Main Dashboard Title */
+    .dashboard-title {
         font-size: 3.5rem;
         font-weight: 900;
-        color: #ffffff;
-        margin: 0;
+        color: #6366f1; /* Purple/Indigo */
+        margin-bottom: 0.5rem;
+        letter-spacing: -1px;
     }
     
-    .metric-label {
+    .section-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+    }
+
+    /* Override Streamlit default buttons */
+    div.stButton > button {
+        background-color: #1e2129 !important;
+        color: white !important;
+        border: 1px solid #333 !important;
+        border-radius: 10px !important;
+        padding: 0.8rem !important;
+        font-weight: 700 !important;
+        width: 100%;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Cards Styling */
+    .result-card {
+        background-color: #0a0a0a;
+        border: 1px solid #1a1a1a;
+        border-radius: 20px;
+        padding: 2rem;
+        min-height: 200px;
+    }
+    
+    .card-label {
         font-size: 0.8rem;
         font-weight: 900;
-        text-transform: uppercase;
         color: #6366f1;
+        text-transform: uppercase;
         letter-spacing: 2px;
+        margin-bottom: 2rem;
+    }
+    
+    .score-value {
+        font-size: 1.5rem;
+        font-weight: 900;
+        margin-bottom: 0.5rem;
+    }
+    
+    .status-text {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #6366f1;
+    }
+    
+    .stats-row {
+        font-size: 1.8rem;
+        font-weight: 900;
+        margin: 1rem 0;
+    }
+    
+    .stats-green { color: #10b981; }
+    .stats-red { color: #ef4444; }
+    
+    .summary-text {
+        font-size: 0.9rem;
+        color: #888;
+        line-height: 1.6;
+    }
+
+    /* file uploader custom styling */
+    [data-testid="stFileUploader"] {
+        background-color: #111318;
+        border: 1px solid #222;
+        border-radius: 12px;
+        padding: 10px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -102,18 +147,13 @@ class EnterpriseDocSyncEngine:
         return {
             "score": score,
             "label": "Accurate Alignment" if score > 70 else "Partial Mismatch" if score > 30 else "Critical Mismatch",
-            "summary": f"Audit of {len(found_logic)} elements complete.",
-            "detailed_issue": issue_detail,
-            "stats": {
-                "total_issues": len(missing),
-                "synced_terms": len(synced),
-            },
-            "missing_list": list(missing),
-            "visual": [len(synced), len(missing)]
+            "stats": {"total": len(missing), "synced": len(synced)},
+            "missing": list(missing),
+            "detail": issue_detail
         }
 
     def _empty_result(self):
-        return {"score": 0, "label": "No Logic Detected", "summary": "Empty scan.", "detailed_issue": "REASON: No structural entities found.", "stats": {"total_issues": 0, "synced_terms": 0}, "missing_list": [], "visual": [0, 1]}
+        return {"score": 0, "label": "No Logic", "stats": {"total": 0, "synced": 0}, "missing": [], "detail": "No code found."}
 
 engine = EnterpriseDocSyncEngine()
 
@@ -130,93 +170,55 @@ def extract_files(uploaded_file, extensions):
         content = uploaded_file.read().decode("utf-8", errors="ignore")
     return content
 
-# --- INITIALIZE STATE ---
-if 'history' not in st.session_state:
-    st.session_state.history = []
+# --- UI LAYOUT ---
+st.markdown("<h1 class='dashboard-title'>DocSync Dashboard</h1>", unsafe_allow_html=True)
 
-# --- SIDEBAR ---
-with st.sidebar:
-    st.markdown("<h1 style='color:#6366f1;'>CraftAI</h1>", unsafe_allow_html=True)
-    page = st.radio("Navigation", ["Dashboard", "Audit History", "Settings"])
-    st.divider()
-    st.info("Enterprise DocSync v2.0")
+col1, col2 = st.columns(2)
+with col1:
+    st.markdown("<p class='section-label'>Project Code (ZIP, PY, JS, etc.)</p>", unsafe_allow_html=True)
+    code_file = st.file_uploader("Code Upload", label_visibility="collapsed", type=['zip', 'py', 'js', 'ts', 'java', 'cpp', 'cs'])
 
-# --- MAIN VIEW ---
-if page == "Dashboard":
-    st.markdown("<h1 class='main-header'>DocSync Dashboard</h1>", unsafe_allow_html=True)
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        code_file = st.file_uploader("1. Project Code (ZIP, PY, JS, etc.)", type=['zip', 'py', 'js', 'ts', 'java', 'cpp', 'cs'])
-    with col2:
-        doc_file = st.file_uploader("2. Documentation (MD, TXT, RST)", type=['md', 'txt', 'rst', 'zip'])
-    
-    if st.button("🚀 INITIATE CONSISTENCY AUDIT", use_container_width=True):
-        if code_file:
-            with st.spinner("Analyzing structural alignment..."):
-                code_text = extract_files(code_file, ['.py', '.js', '.ts', '.java', '.cpp', '.cs'])
-                doc_text = extract_files(doc_file, ['.md', '.txt', '.rst']) if doc_file else ""
-                
-                result = engine.perform_audit(code_text, doc_text)
-                
-                # Save to history
-                st.session_state.history.insert(0, {
-                    "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
-                    "project": code_file.name,
-                    "score": result['score'],
-                    "status": result['label']
-                })
-                
-                # Results Display
-                st.divider()
-                r1, r2, r3 = st.columns(3)
-                with r1:
-                    st.markdown(f"""
-                        <div class="glass-card">
-                            <p class="metric-label">Consistency Score</p>
-                            <p class="metric-value">{result['score']}%</p>
-                            <p style="color:#6366f1; font-weight:900;">{result['label']}</p>
-                        </div>
-                    """, unsafe_allow_html=True)
-                
-                with r2:
-                    st.markdown(f"""
-                        <div class="glass-card">
-                            <p class="metric-label">Structural Stats</p>
-                            <p style="font-size:1.5rem; font-weight:900; margin-top:10px;">Synced: <span style="color:#10b981;">{result['stats']['synced_terms']}</span></p>
-                            <p style="font-size:1.5rem; font-weight:900;">Issues: <span style="color:#ef4444;">{result['stats']['total_issues']}</span></p>
-                        </div>
-                    """, unsafe_allow_html=True)
-                
-                with r3:
-                    st.markdown(f"""
-                        <div class="glass-card">
-                            <p class="metric-label">Issue Summary</p>
-                            <p style="font-size:0.9rem; color:#9ca3af; margin-top:10px;">{result['detailed_issue']}</p>
-                        </div>
-                    """, unsafe_allow_html=True)
+with col2:
+    st.markdown("<p class='section-label'>Documentation (MD, TXT, RST)</p>", unsafe_allow_html=True)
+    doc_file = st.file_uploader("Doc Upload", label_visibility="collapsed", type=['md', 'txt', 'rst', 'zip'])
 
-                if result['missing_list']:
-                    st.subheader("⚠️ Documentation Gaps")
-                    for item in result['missing_list'][:5]:
-                        st.error(f"Missing documentation for entity: `{item}`")
-        else:
-            st.warning("Please upload a code file to begin.")
+st.write("") # Spacer
 
-elif page == "Audit History":
-    st.markdown("<h1 class='main-header'>Audit History</h1>", unsafe_allow_html=True)
-    if st.session_state.history:
-        df = pd.DataFrame(st.session_state.history)
-        st.dataframe(df, use_container_width=True)
+if st.button("🚀 INITIATE CONSISTENCY AUDIT"):
+    if code_file:
+        code_text = extract_files(code_file, ['.py', '.js', '.ts', '.java', '.cpp', '.cs'])
+        doc_text = extract_files(doc_file, ['.md', '.txt', '.rst']) if doc_file else ""
         
-        if st.button("Clear History"):
-            st.session_state.history = []
-            st.rerun()
+        result = engine.perform_audit(code_text, doc_text)
+        
+        st.divider()
+        
+        c1, c2, c3 = st.columns(3)
+        
+        with c1:
+            st.markdown(f"""
+                <div class="result-card">
+                    <p class="card-label">CONSISTENCY SCORE</p>
+                    <p class="score-value">{result['score']}%</p>
+                    <p class="status-text">{result['label']}</p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        with c2:
+            st.markdown(f"""
+                <div class="result-card">
+                    <p class="card-label">STRUCTURAL STATS</p>
+                    <p class="stats-row text-white">Synced: <span class="stats-green">{result['stats']['synced']}</span></p>
+                    <p class="stats-row text-white">Issues: <span class="stats-red">{result['stats']['total']}</span></p>
+                </div>
+            """, unsafe_allow_html=True)
+            
+        with c3:
+            st.markdown(f"""
+                <div class="result-card">
+                    <p class="card-label">ISSUE SUMMARY</p>
+                    <p class="summary-text">{result['detail']}</p>
+                </div>
+            """, unsafe_allow_html=True)
     else:
-        st.info("No audit history found.")
-
-elif page == "Settings":
-    st.markdown("<h1 class='main-header'>System Settings</h1>", unsafe_allow_html=True)
-    st.write("Enterprise configuration options.")
-    st.checkbox("Enable AI Auto-Fix", value=True)
-    st.checkbox("Deep Context Scanning", value=True)
+        st.error("Please provide a code file.")
