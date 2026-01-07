@@ -7,13 +7,9 @@ import zipfile
 import io
 import re
 from src.agent.stat_analysis import symmetric_analysis
-from datetime import datetime
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-
-# Simple Server-Side Persistence for Demo
-history_log = []
 
 async def extract_all(file_bytes, extensions):
     file_map = {}
@@ -27,7 +23,7 @@ async def extract_all(file_bytes, extensions):
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request, "result": None, "history": history_log})
+    return templates.TemplateResponse("index.html", {"request": request, "result": None})
 
 @app.post("/analyze", response_class=HTMLResponse)
 async def analyze(request: Request, code_file: UploadFile = File(None), doc_file: UploadFile = File(None)):
@@ -37,7 +33,9 @@ async def analyze(request: Request, code_file: UploadFile = File(None), doc_file
     code_map = {}
     doc_map = {}
     
-    filename = code_file.filename if code_file else "Unknown Project"
+    # Track names for the frontend boxes
+    c_name = code_file.filename if code_file else ""
+    d_name = doc_file.filename if doc_file else ""
 
     if code_file and code_file.filename:
         c_bytes = await code_file.read()
@@ -55,28 +53,17 @@ async def analyze(request: Request, code_file: UploadFile = File(None), doc_file
             doc_map[doc_file.filename] = d_bytes.decode("utf-8", errors="ignore")
 
     if not code_map:
-        return templates.TemplateResponse("index.html", {"request": request, "result": "no_input", "history": history_log})
+        return templates.TemplateResponse("index.html", {"request": request, "result": "no_input"})
 
-    # Perform Structural Analysis
+    # Real Structural Analysis
     analysis = symmetric_analysis("\n".join(code_map.values()), "\n".join(doc_map.values()))
     
-    # Store in History for the "History" button to work
-    report_entry = {
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "project": filename,
-        "score": analysis["score"],
-        "status": analysis["label"],
-        "files_count": len(code_map)
-    }
-    history_log.insert(0, report_entry) # Most recent first
-
-    # Clean up history to keep it fast
-    if len(history_log) > 10:
-        history_log.pop()
-
+    # PASS FILENAMES BACK TO FRONTEND
+    analysis["code_filename"] = c_name
+    analysis["doc_filename"] = d_name
     analysis["file_list"] = list(code_map.keys())
     
-    return templates.TemplateResponse("index.html", {"request": request, "result": analysis, "history": history_log})
+    return templates.TemplateResponse("index.html", {"request": request, "result": analysis})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
