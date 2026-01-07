@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, File, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import os
 import zipfile
@@ -9,19 +9,18 @@ from typing import Dict, Any, List, Set
 
 app = FastAPI()
 
-# FIX: Use absolute path for Vercel to find templates reliably
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-templates = Jinja2Templates(directory=os.path.join(BASE_DIR, "templates"))
+# Standard Vercel template path
+templates = Jinja2Templates(directory="templates")
 
 class EnterpriseDocSyncEngine:
     def __init__(self):
         self.patterns = {
             "logic": [
-                r"def\s+([A-Za-z_]\w*)",           # Python
-                r"function\s+([A-Za-z_]\w*)",      # JS/TS
-                r"(?:const|let|var)\s+([A-Za-z_]\w*)\s*=\s*(?:\(.*\)|function)", # JS Arrow
-                r"class\s+([A-Za-z_]\w*)",         # Classes
-                r"(['\"]?[\w-]+['\"]?)\s*:",       # JS Object Keys
+                r"def\s+([A-Za-z_]\w*)",
+                r"function\s+([A-Za-z_]\w*)",
+                r"(?:const|let|var)\s+([A-Za-z_]\w*)\s*=\s*(?:\(.*\)|function)",
+                r"class\s+([A-Za-z_]\w*)",
+                r"(['\"]?[\w-]+['\"]?)\s*:",
             ]
         }
 
@@ -83,6 +82,10 @@ async def extract_all(file_bytes, extensions):
                     with z.open(info.filename) as f:
                         file_map[info.filename] = f.read().decode("utf-8", errors="ignore")
     return file_map
+
+@app.get("/health")
+async def health():
+    return JSONResponse(content={"status": "ok"})
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):

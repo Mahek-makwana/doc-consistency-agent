@@ -1,8 +1,4 @@
 fastapi
 jinja2
 python-multipart
-starlette
 uvicorn
-pydantic
-typing-extensions
-python-dotenv
