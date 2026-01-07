@@ -1,18 +1,11 @@
 requests
 fastapi
-uvicorn[standard]
+uvicorn
 pydantic
 openai
 langchain
 pygments
-mkdocs
 python-frontmatter
-black
-pytest
-scikit-learn 
-scikit-learn
-numpy
-joblib
 python-dotenv
 PyYAML
 starlette
@@ -21,7 +14,3 @@ watchfiles
 craft-ai-sdk
 jinja2
 python-multipart
-streamlit
-pandas
-matplotlib
-

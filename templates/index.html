@@ -7,7 +7,6 @@
     <title>CraftAI DocSync | Enterprise Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons for Figma Match -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
@@ -16,21 +15,46 @@
             background-color: #050505;
             color: #fff;
             scroll-behavior: smooth;
+            margin: 0;
         }
 
+        .flex-h-screen {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 288px;
+            background: #050505;
+            border-right: 1px solid rgba(168, 85, 247, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Main Content Styles */
+        .main-container {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Glassmorphism Card Mapping from Figma */
         .glass-card {
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
+            backdrop-blur: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
+            padding: 24px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
         }
 
         .glass-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(99, 102, 241, 0.4);
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(99, 102, 241, 0.3);
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
 
         .gradient-text {
@@ -39,23 +63,9 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .sidebar {
-            width: 288px;
-            height: 100vh;
-            background: #050505;
-            border-right: 1px solid rgba(168, 85, 247, 0.1);
-            position: fixed;
-            left: 0;
-            top: 0;
-        }
-
-        .main-content {
-            margin-left: 288px;
-            min-height: 100vh;
-        }
-
         .btn-gradient {
             background: linear-gradient(to right, #4f46e5, #9333ea);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
             transition: all 0.3s ease;
         }
 
@@ -64,238 +74,359 @@
             transform: scale(1.02);
         }
 
+        .upload-zone {
+            border: 2px dashed rgba(168, 85, 247, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .upload-zone:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-zone.has-file {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
+        }
+
+        /* Custom Icon Bg Gradients from Figma */
+        .icon-bg-indigo {
+            background: linear-gradient(to bottom right, #6366f1, #9333ea);
+        }
+
+        .icon-bg-purple {
+            background: linear-gradient(to bottom right, #a855f7, #db2777);
+        }
+
+        .icon-bg-blue {
+            background: linear-gradient(to bottom right, #3b82f6, #6366f1);
+        }
+
+        .icon-bg-violet {
+            background: linear-gradient(to bottom right, #8b5cf6, #a855f7);
         }
     </style>
 </head>
 
 <body>
 
-    <!-- SIDEBAR (Figma Component) -->
-    <div class="sidebar flex flex-col p-8">
-        <div class="flex items-center gap-4 mb-12">
-            <div
-                class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/50">
-                <i data-lucide="sparkles" class="text-white w-7 h-7"></i>
+    <div class="flex-h-screen">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="p-8 border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/50">
+                        <i data-lucide="sparkles" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white text-xl">CraftAI</h1>
+                        <p class="text-xs text-purple-400 font-bold uppercase tracking-widest">DocSync Agent</p>
+                    </div>
+                </div>
             </div>
-            <div>
-                <h1 class="font-bold text-white text-xl">CraftAI</h1>
-                <p class="text-[10px] text-purple-400 font-black uppercase tracking-widest">DocSync Agent</p>
+
+            <nav class="flex-1 p-6 space-y-3">
+                <div
+                    class="w-full flex items-center gap-4 px-5 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-purple-500/40 cursor-pointer">
+                    <i data-lucide="home" class="w-5 h-5"></i>
+                    <span class="font-bold text-sm">Dashboard</span>
+                </div>
+                <div
+                    class="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-bold text-sm">Reports</span>
+                </div>
+                <div
+                    class="w-full flex items-center gap-4 px-5 py-4 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all cursor-pointer">
+                    <i data-lucide="history" class="w-5 h-5"></i>
+                    <span class="font-bold text-sm">History</span>
+                </div>
+            </nav>
+
+            <div class="p-6 border-t border-white/5">
+                <div class="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <div
+                        class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[10px] font-bold">
+                        G</div>
+                    <div>
+                        <p class="text-[10px] font-bold text-white uppercase tracking-widest">Guest Mode</p>
+                        <p class="text-[9px] text-gray-500 font-bold">PUBLIC ACCESS</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <nav class="space-y-4">
+        <!-- MAIN CONTENT -->
+        <div class="main-container scrollbar-hide">
+            <!-- Hero Gradient Backgrounds -->
             <div
-                class="flex items-center gap-4 px-5 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-purple-500/40 cursor-pointer text-sm font-bold">
-                <i data-lucide="home" class="w-5 h-5"></i> Dashboard
+                class="absolute top-0 left-1/3 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none">
             </div>
             <div
-                class="flex items-center gap-4 px-5 py-4 rounded-xl text-gray-400 hover:bg-white/5 transition cursor-pointer text-sm font-bold">
-                <i data-lucide="file-text" class="w-5 h-5"></i> Reports
+                class="absolute top-0 right-1/3 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none">
             </div>
-            <div
-                class="flex items-center gap-4 px-5 py-4 rounded-xl text-gray-400 hover:bg-white/5 transition cursor-pointer text-sm font-bold">
-                <i data-lucide="history" class="w-5 h-5"></i> History
+
+            <div class="relative px-12 py-16">
+                <h1 class="text-7xl font-bold gradient-text mb-8">CraftAI DocSync</h1>
+
+                <form action="/analyze" method="POST" enctype="multipart/form-data" id="auditForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <!-- Box 1: Project Scenario -->
+                        <div class="upload-zone" id="code_zone" onclick="document.getElementById('code_file').click()">
+                            <i data-lucide="box" class="w-8 h-8 text-indigo-400 mx-auto mb-2"></i>
+                            <h3 class="text-sm font-black uppercase text-white mb-1">1. Project Scenario</h3>
+                            <p class="text-[10px] text-gray-500 font-bold" id="code_status">JAVASCRIPT, PYTHON, ZIP,
+                                JAVA, etc.</p>
+                            <input type="file" name="code_file" id="code_file" class="hidden"
+                                onchange="handleFile('code')">
+                        </div>
+
+                        <!-- Box 2: Documentation -->
+                        <div class="upload-zone" id="doc_zone" onclick="document.getElementById('doc_file').click()">
+                            <i data-lucide="file-text" class="w-8 h-8 text-purple-400 mx-auto mb-2"></i>
+                            <h3 class="text-sm font-black uppercase text-white mb-1">2. Documentation (optional)</h3>
+                            <p class="text-[10px] text-gray-500 font-bold" id="doc_status">MD, TXT, ...etc.</p>
+                            <input type="file" name="doc_file" id="doc_file" class="hidden"
+                                onchange="handleFile('doc')">
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="btn-gradient flex items-center gap-3 px-8 py-5 text-white rounded-2xl font-black text-lg transition-all">
+                        <i data-lucide="play" class="w-6 h-6"></i>
+                        Initiate Consistency Audit
+                    </button>
+                </form>
             </div>
-        </nav>
-    </div>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <!-- HERO SECTION -->
-        <div class="relative px-12 py-20 border-b border-white/5 overflow-hidden">
-            <div class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[120px]"></div>
-            <h1 class="text-8xl font-black gradient-text mb-8">CraftAI DocSync</h1>
+            <!-- Dashboard Grid -->
+            <div class="px-12 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
-            <form action="/analyze" method="POST" enctype="multipart/form-data" id="auditForm"
-                class="flex gap-6 relative z-10">
-                <input type="file" name="code_file" id="code_file" class="hidden" onchange="this.form.submit()">
-                <input type="file" name="doc_file" id="doc_file" class="hidden" onchange="this.form.submit()">
-
-                <button type="button" onclick="document.getElementById('code_file').click()"
-                    class="btn-gradient px-10 py-5 rounded-2xl font-black text-xl flex items-center gap-3">
-                    <i data-lucide="play" class="w-6 h-6"></i> Initiate Consistency Audit
-                </button>
-                <button type="button" onclick="document.getElementById('doc_file').click()"
-                    class="border-2 border-white/10 px-10 py-5 rounded-2xl font-black text-xl hover:bg-white/5 transition flex items-center gap-3">
-                    <i data-lucide="upload" class="w-6 h-6"></i> Upload Documents
-                </button>
-            </form>
-        </div>
-
-        <!-- DASHBOARD GRID -->
-        <div class="p-12">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-
-                {% if result %}
-                <!-- 1. ANALYSIS SUMMARY -->
-                <div class="glass-card p-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center"><i
-                                data-lucide="file-search" class="w-5 h-5 text-white"></i></div>
-                        <h3 class="font-bold text-lg">Analysis Summary</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between"><span class="text-gray-400 text-sm">Files
-                                Encrypted</span><span class="font-bold">{{ result.stats.files }}</span></div>
-                        <div class="flex justify-between"><span class="text-gray-400 text-sm">Sync Score</span><span
-                                class="font-bold text-indigo-400">{{ result.score }}%</span></div>
-                        <div class="h-2 bg-white/5 rounded-full mt-4">
-                            <div class="h-full bg-indigo-500 rounded-full" style="width: {{ result.score }}%"></div>
+                    {% if result %}
+                    <!-- 1. ANALYSIS SUMMARY -->
+                    <div class="glass-card">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 icon-bg-indigo rounded-xl flex items-center justify-center shadow-lg">
+                                <i data-lucide="search" class="w-6 h-6 text-white"></i></div>
+                            <h3 class="text-lg font-bold text-white">Analysis Summary</h3>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 2. STATISTIC REPORT -->
-                <div class="glass-card p-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center"><i
-                                data-lucide="trending-up" class="w-5 h-5 text-white"></i></div>
-                        <h3 class="font-bold text-lg">Statistic Report</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <div class="flex justify-between p-3 bg-white/5 rounded-lg">
-                            <div>
-                                <p class="text-[10px] text-gray-500">TOTAL ISSUES</p>
-                                <p class="text-xl font-bold">{{ result.stats.logic_gaps }}</p>
-                            </div><span class="text-red-400 text-xs font-bold">-12%</span>
-                        </div>
-                        <div class="flex justify-between p-3 bg-white/5 rounded-lg">
-                            <div>
-                                <p class="text-[10px] text-gray-500">SYNCED TERMS</p>
-                                <p class="text-xl font-bold">{{ result.stats.common_terms }}</p>
-                            </div><span class="text-green-400 text-xs font-bold">+8%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. ISSUE SUMMARY -->
-                <div class="glass-card p-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-pink-500 rounded-lg flex items-center justify-center"><i
-                                data-lucide="alert-circle" class="w-5 h-5 text-white"></i></div>
-                        <h3 class="font-bold text-lg">Issue Summary</h3>
-                    </div>
-                    <div class="space-y-4">
-                        <p class="text-sm font-bold text-indigo-400">{{ result.label }} Identified</p>
-                        <p class="text-xs text-gray-400 leading-relaxed">{{ result.summary[:100] }}...</p>
-                    </div>
-                </div>
-
-                <!-- 4. ISSUE SUGGESTED -->
-                <div class="glass-card p-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center"><i
-                                data-lucide="lightbulb" class="w-5 h-5 text-white"></i></div>
-                        <h3 class="font-bold text-lg">Issue Suggested</h3>
-                    </div>
-                    <div class="space-y-3">
-                        {% for sugg in result.suggestions[:3] %}
-                        <div class="p-3 bg-white/5 rounded-lg border border-white/5 text-[11px] text-gray-300">⚡ {{ sugg
-                            }}</div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- 5. LOCAL ANALYSIS -->
-                <div class="glass-card p-8">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center"><i
-                                data-lucide="map-pin" class="w-5 h-5 text-white"></i></div>
-                        <h3 class="font-bold text-lg">Local Analysis</h3>
-                    </div>
-                    <div class="max-h-32 overflow-y-auto scrollbar-hide text-[10px] text-gray-500 font-mono">
-                        {% for file in result.file_list %}
-                        - scan: {{ file }}<br>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- 6. QUICK FIX -->
-                <div class="glass-card p-8 col-span-1 md:col-span-2">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center"><i
-                                data-lucide="zap" class="w-5 h-5 text-white"></i></div>
-                        <h3 class="font-bold text-lg">Quick Fix Script</h3>
-                    </div>
-                    <div class="bg-black/50 p-6 rounded-xl border border-white/5 text-xs text-gray-400 font-mono">
-                        # Consistency Patch v1.0<br>
-                        {% for sugg in result.suggestions[:2] %}
-                        ## Delta Fix: {{ sugg.split()[-1] }}<br>Apply terminology alignment to technical specs.<br>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- 7. VISUAL SUMMARY -->
-                <div class="glass-card p-8 col-span-1 md:col-span-2">
-                    <div class="flex items-start gap-12">
-                        <div class="w-1/2">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center"><i
-                                        data-lucide="pie-chart" class="w-5 h-5 text-white"></i></div>
-                                <h3 class="font-bold text-lg">Visual Summary</h3>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center"><span class="text-gray-400 text-sm">Docs
+                                    Analyzed</span><span class="text-2xl font-bold text-white">{{ result.stats.files
+                                    }}</span></div>
+                            <div class="flex justify-between items-center"><span
+                                    class="text-gray-400 text-sm">Consistency Score</span><span
+                                    class="text-2xl font-bold text-indigo-400">{{ result.score }}%</span></div>
+                            <div class="mt-4 h-2 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full"
+                                    style="width: {{ result.score }}%"></div>
                             </div>
-                            <p class="text-xs text-gray-500 leading-relaxed">Operational health map showing the distance
-                                between logic and content.</p>
-                        </div>
-                        <div class="w-1/2 h-44 flex justify-center">
-                            <canvas id="healthChart"></canvas>
                         </div>
                     </div>
-                </div>
 
-                <!-- 8. EXPORT -->
-                <div class="glass-card p-8 border-dashed border-indigo-500/30 flex flex-col justify-between">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center"><i
-                                data-lucide="download" class="w-5 h-5 text-white"></i></div>
-                        <h3 class="font-bold text-lg">Export Analysis</h3>
+                    <!-- 2. STATISTIC REPORT -->
+                    <div class="glass-card">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 icon-bg-purple rounded-xl flex items-center justify-center shadow-lg">
+                                <i data-lucide="trending-up" class="w-6 h-6 text-white"></i></div>
+                            <h3 class="text-lg font-bold text-white">Statistic Report</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div
+                                class="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/5">
+                                <div>
+                                    <p class="text-xs text-gray-500 uppercase font-black">Total Issues</p>
+                                    <p class="text-xl font-bold text-white mt-1">{{ result.stats.logic_gaps }}</p>
+                                </div>
+                                <div class="text-sm font-semibold text-red-400">-12%</div>
+                            </div>
+                            <div
+                                class="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/5">
+                                <div>
+                                    <p class="text-xs text-indigo-400 uppercase font-black">Synced Terms</p>
+                                    <p class="text-xl font-bold text-white mt-1">{{ result.stats.common_terms }}</p>
+                                </div>
+                                <div class="text-sm font-semibold text-green-400">+8%</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="exportDoc('txt')"
-                            class="btn-gradient py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2">Word</button>
-                        <button onclick="exportDoc('txt')"
-                            class="bg-white/5 py-3 rounded-xl font-bold text-xs hover:bg-white/10 transition">Text</button>
-                    </div>
-                </div>
-                {% else %}
-                <!-- Placeholder for before analysis -->
-                <div class="col-span-4 p-20 text-center opacity-30">
-                    <i data-lucide="sparkles" class="w-20 h-20 mx-auto mb-6 text-gray-500"></i>
-                    <p class="text-2xl font-black">Waiting for Consistency Audit...</p>
-                </div>
-                {% endif %}
 
+                    <!-- 3. ISSUE SUMMARY -->
+                    <div class="glass-card">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 icon-bg-indigo rounded-xl flex items-center justify-center shadow-lg">
+                                <i data-lucide="alert-circle" class="w-6 h-6 text-white"></i></div>
+                            <h3 class="text-lg font-bold text-white">Issue Summary</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <p class="text-xs text-gray-400 mb-4">{{ result.summary[:80] }}...</p>
+                            <div class="flex items-center justify-between text-xs"><span
+                                    class="text-gray-300">Terminology</span><span class="font-bold">45</span></div>
+                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-red-500" style="width: 45%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs"><span
+                                    class="text-gray-300">Style</span><span class="font-bold">38</span></div>
+                            <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500" style="width: 38%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. ISSUE SUGGESTED -->
+                    <div class="glass-card">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 icon-bg-violet rounded-xl flex items-center justify-center shadow-lg">
+                                <i data-lucide="lightbulb" class="w-6 h-6 text-white"></i></div>
+                            <h3 class="text-lg font-bold text-white">Issue Suggested</h3>
+                        </div>
+                        <div class="space-y-2">
+                            {% for sugg in result.suggestions[:3] %}
+                            <div class="p-3 bg-white/5 rounded-lg border border-white/5 text-[10px] text-gray-300">⚡ {{
+                                sugg }}</div>
+                            {% endfor %}
+                            <button class="w-full text-center text-xs text-purple-400 font-bold mt-2">View all
+                                →</button>
+                        </div>
+                    </div>
+
+                    <!-- 5. LOCAL ANALYSIS -->
+                    <div class="glass-card">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 icon-bg-blue rounded-xl flex items-center justify-center shadow-lg"><i
+                                    data-lucide="map-pin" class="w-6 h-6 text-white"></i></div>
+                            <h3 class="text-lg font-bold text-white">Local Analysis</h3>
+                        </div>
+                        <div class="space-y-2 h-40 overflow-y-auto scrollbar-hide">
+                            {% for file in result.file_list %}
+                            <div
+                                class="p-2 bg-white/5 rounded border border-white/5 text-[10px] text-indigo-300 font-mono">
+                                /{{ file }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- 6. QUICK FIX -->
+                    <div class="glass-card md:col-span-1 lg:col-span-1">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 icon-bg-purple rounded-xl flex items-center justify-center shadow-lg">
+                                <i data-lucide="zap" class="w-6 h-6 text-white"></i></div>
+                            <h3 class="text-lg font-bold text-white">Quick Fix</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <div
+                                class="bg-black/40 p-3 rounded-lg border border-white/5 text-[10px] font-mono text-gray-500">
+                                # Fix Delta Implementation<br>
+                                {% for sugg in result.suggestions[:1] %}- Sync: {{ sugg.split()[-1] }}{% endfor %}
+                            </div>
+                            <button
+                                class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-bold text-xs shadow-lg">Apply
+                                Fix</button>
+                        </div>
+                    </div>
+
+                    <!-- 7. VISUAL SUMMARY -->
+                    <div class="glass-card md:col-span-2 lg:col-span-2">
+                        <div class="flex items-center gap-12 h-full">
+                            <div class="w-1/2">
+                                <div class="flex items-center gap-3 mb-5">
+                                    <div
+                                        class="w-11 h-11 icon-bg-indigo rounded-xl flex items-center justify-center shadow-lg">
+                                        <i data-lucide="pie-chart" class="w-6 h-6 text-white"></i></div>
+                                    <h3 class="text-lg font-bold text-white">Visual Summary</h3>
+                                </div>
+                                <p class="text-xs text-gray-500 leading-relaxed mb-4">Semantic map showing the overlap
+                                    between codebase logic and documentation.</p>
+                                <div class="flex gap-4">
+                                    <div class="flex items-center gap-2 text-[10px]">
+                                        <div class="w-2 h-2 rounded bg-indigo-500"></div> Synced
+                                    </div>
+                                    <div class="flex items-center gap-2 text-[10px]">
+                                        <div class="w-2 h-2 rounded bg-pink-500"></div> Gap
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="w-1/2 flex justify-center h-48">
+                                <canvas id="healthChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 8. EXPORT -->
+                    <div class="glass-card border-dashed border-purple-500/30">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-11 h-11 icon-bg-violet rounded-xl flex items-center justify-center shadow-lg">
+                                <i data-lucide="download" class="w-6 h-6 text-white"></i></div>
+                            <h3 class="text-lg font-bold text-white">Export</h3>
+                        </div>
+                        <div class="flex flex-col gap-3">
+                            <button onclick="exportDoc('txt')"
+                                class="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl font-bold text-xs"><i
+                                    data-lucide="file-text" class="w-4 h-4"></i> Word</button>
+                            <button onclick="exportDoc('txt')"
+                                class="flex items-center justify-center gap-2 w-full py-3 bg-white/5 border border-white/10 rounded-xl font-bold text-xs hover:border-purple-500/50"><i
+                                    data-lucide="file-type" class="w-4 h-4"></i> Text</button>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <!-- Placeholder state -->
+                    <div class="col-span-full py-20 text-center opacity-30">
+                        <i data-lucide="shield" class="w-20 h-20 mx-auto mb-4 text-gray-600"></i>
+                        <p class="text-2xl font-black uppercase tracking-widest text-gray-600">Ready for Audit</p>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Init Lucide Icons
         lucide.createIcons();
+
+        function handleFile(type) {
+            const input = document.getElementById(type + '_file');
+            const zone = document.getElementById(type + '_zone');
+            const status = document.getElementById(type + '_status');
+            if (input.files.length > 0) {
+                const name = input.files[0].name;
+                status.innerHTML = `<span class="text-green-400 font-black">✓ ${name}</span>`;
+                zone.classList.add('has-file');
+            }
+        }
 
         {% if result %}
         const ctx = document.getElementById('healthChart').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Synced', 'Gaps', 'Orphans'],
+                labels: ['Synced', 'Gaps', 'Other'],
                 datasets: [{
                     data: {{ result.visual | tojson }},
-            backgroundColor: ['#6366f1', '#f43f5e', '#10b981'],
+            backgroundColor: ['#6366f1', '#ec4899', '#333'],
             borderWidth: 0,
             cutout: '80%'
         }]
             },
-            options: { plugins: { legend: { display: false } } }
+            options: { plugins: { legend: { display: false } }, maintainAspectRatio: false }
         });
+
         function exportDoc(ext) {
             const content = `{{ result.export_raw | safe }}`;
             const blob = new Blob([content], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = `audit_report.${ext}`; a.click();
+            const a = document.createElement('a'); a.href = url; a.download = `craftai_report.${ext}`; a.click();
         }
         {% endif %}
     </script>

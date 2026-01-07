@@ -1,18 +1,16 @@
 from typing import Dict, Any, List
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 import re
+import math
+from collections import Counter
 
 class StatisticalAnalyzer:
     """
-    Advanced Statistical Text Alignment Engine.
-    Optimized for software engineering documentation.
+    Advanced Statistical Text Alignment Engine (Pure Python - Optimized for Vercel).
+    No heavy dependencies (scikit-learn/numpy) to stay under 250MB limit.
     """
 
     def __init__(self):
-        # Professional Stopwords: Ignore filler words that drag down scores
-        self.stop_words = [
+        self.stop_words = set([
             'this', 'function', 'a', 'an', 'the', 'is', 'are', 'to', 'of', 'for', 
             'in', 'with', 'it', 'and', 'from', 'into', 'that', 'which', 'who', 
             'whose', 'whom', 'where', 'when', 'why', 'how', 'its', 'as', 'at', 
@@ -22,16 +20,8 @@ class StatisticalAnalyzer:
             'below', 'under', 'over', 'again', 'once', 'then', 'else', 'or', 
             'but', 'so', 'than', 'while', 'module', 'class', 'method', 'returns',
             'returning', 'takes', 'inputs', 'output', 'computes', 'calculates',
-            'performing', 'process', 'using', 'used', 'base', 'price' # Some domain words are better kept, but filler isn't
-        ]
-
-        self.vectorizer = TfidfVectorizer(
-            token_pattern=r"(?u)\b\w\w+\b",
-            use_idf=False,
-            norm='l2',
-            sublinear_tf=True,
-            stop_words=self.stop_words
-        )
+            'performing', 'process', 'using', 'used', 'base', 'price'
+        ])
         
         self.operational_map = {
             "dist": ["distance", "euclidean", "metric", "path"],
@@ -44,63 +34,59 @@ class StatisticalAnalyzer:
             "log": ["logarithm", "scale", "transform"]
         }
 
-    def preprocess(self, text: str) -> str:
-        """
-        Cleans text and separates code identifiers (e.g. calcPrice -> calc price).
-        """
-        # Lowercase
+    def preprocess(self, text: str) -> List[str]:
+        """Cleans text and returns a list of meaningful tokens."""
         text = text.lower()
-        # Handle snake_case and camelCase partially by replacing underscores
         text = text.replace("_", " ")
-        # Separate symbols
-        text = re.sub(r'[()\[\]{}:,.=;\'"]', " ", text)
-        # Remove numbers
-        text = re.sub(r'\b\d+\b', '', text)
-        return text
+        text = re.sub(r'[()\[\]{}:,.=;\'"/-]', " ", text)
+        tokens = [t for t in text.split() if t not in self.stop_words and len(t) > 1]
+        return tokens
 
-    def _check_operational_alignment(self, code: str, doc: str) -> List[str]:
-        gaps = []
-        code_lower = code.lower()
-        doc_lower = doc.lower()
-        for trigger, synonyms in self.operational_map.items():
-            if trigger in code_lower:
-                found = any(s in doc_lower for s in synonyms) or (trigger in doc_lower)
-                if not found:
-                    gaps.append(f"Operational Gap: Code uses '{trigger}' but docs don't mention {synonyms[0]}.")
-        return gaps
+    def _cosine_similarity(self, vec1: Counter, vec2: Counter) -> float:
+        """Calculates cosine similarity between two frequency vectors."""
+        intersection = set(vec1.keys()) & set(vec2.keys())
+        numerator = sum([vec1[x] * vec2[x] for x in intersection])
+
+        sum1 = sum([val**2 for val in vec1.values()])
+        sum2 = sum([val**2 for val in vec2.values()])
+        denominator = math.sqrt(sum1) * math.sqrt(sum2)
+
+        if not denominator:
+            return 0.0
+        return float(numerator) / denominator
 
     def compute_similarity(self, text1: str, text2: str) -> Dict[str, Any]:
         if not text1.strip() or not text2.strip():
             return {"score": 0.0, "common_words": [], "missing_in_code": [], "missing_in_doc": [], "suggestions": ["Input missing."]}
         
         try:
-            t1 = self.preprocess(text1)
-            t2 = self.preprocess(text2)
+            tokens1 = self.preprocess(text1)
+            tokens2 = self.preprocess(text2)
             
-            vectors = self.vectorizer.fit_transform([t1, t2])
-            feature_names = self.vectorizer.get_feature_names_out()
+            vec1 = Counter(tokens1)
+            vec2 = Counter(tokens2)
             
-            if len(feature_names) == 0:
-                return {
-                    "score": 0.0, 
-                    "common_words": [], 
-                    "missing_in_code": [], 
-                    "missing_in_doc": [], 
-                    "suggestions": ["No meaningful words found for analysis. Please check your input."]
-                }
-
-            raw_similarity = float(cosine_similarity(vectors[0], vectors[1])[0][0])
-            score = min(1.0, raw_similarity * 1.5)
-            dense = vectors.toarray()
+            raw_sim = self._cosine_similarity(vec1, vec2)
+            # Boost score slightly for marketing feel
+            score = min(1.0, raw_sim * 1.5) if raw_sim > 0 else 0.0
             
-            code_words = {feature_names[i] for i, val in enumerate(dense[0]) if val > 0}
-            doc_words = {feature_names[i] for i, val in enumerate(dense[1]) if val > 0}
+            code_words = set(vec1.keys())
+            doc_words = set(vec2.keys())
             
             common = code_words.intersection(doc_words)
             missing_in_code = doc_words - code_words
             missing_in_doc = code_words - doc_words
             
-            suggestions = self._check_operational_alignment(text1, text2)
+            suggestions = []
+            # Operational Alignment Check
+            code_str = text1.lower()
+            doc_str = text2.lower()
+            for trigger, synonyms in self.operational_map.items():
+                if trigger in code_str:
+                    found = any(s in doc_str for s in synonyms) or (trigger in doc_str)
+                    if not found:
+                        suggestions.append(f"Operational Gap: Code uses '{trigger}' but docs don't mention {synonyms[0]}.")
+            
             if score < 0.5:
                 suggestions.append("Improve vocabulary alignment between code identifiers and docstrings.")
 
@@ -118,7 +104,6 @@ class StatisticalAnalyzer:
         analysis = self.compute_similarity(code_text, doc_text)
         sim_score = analysis["score"]
         
-        # Categorize Issues
         issues = {
             "missing_code": analysis["missing_in_doc"],
             "missing_docs": analysis["missing_in_code"],
@@ -126,35 +111,20 @@ class StatisticalAnalyzer:
         }
 
         if sim_score > 0.85:
-            match_label = "Production Quality"
-            icon = "💎"
+            match_label = "Production Quality"; icon = "💎"
             summary = "Excellent alignment. Code and documentation are synchronized perfectly."
         elif sim_score > 0.65:
-            match_label = "High Alignment"
-            icon = "✅"
+            match_label = "High Alignment"; icon = "✅"
             summary = "Strong alignment. Most core concepts are documented correctly."
         elif sim_score > 0.40:
-            match_label = "Partial Alignment"
-            icon = "⚠️"
+            match_label = "Partial Alignment"; icon = "⚠️"
             summary = "Noticeable gaps detected. Some critical code logic lacks documentation support."
         else:
-            match_label = "Poor Alignment"
-            icon = "❌"
+            match_label = "Poor Alignment"; icon = "❌"
             summary = "Critical mismatch. Documentation does not accurately reflect the source code."
 
-        # Analysis Summary
-        detailed_summary = f"{summary} Analyzed {len(analysis['common_words'])} common terms. "
-        if issues["missing_docs"]:
-            detailed_summary += f"Found {len(issues['missing_docs'])} document-only concepts not in code. "
-        if issues["missing_code"]:
-            detailed_summary += f"Detected {len(issues['missing_code'])} code-only terms missing in docs."
-
-        # Quick Fix (Draft)
-        quick_fixes = []
-        if issues["missing_code"]:
-            fix = "Add the following terms to your documentation: " + ", ".join(list(issues['missing_code'])[:5])
-            quick_fixes.append(fix)
-
+        detailed_summary = f"{summary} Analyzed {len(analysis['common_words'])} common terms."
+        
         return {
             "forward_match": sim_score,
             "backward_match": sim_score,
@@ -170,7 +140,7 @@ class StatisticalAnalyzer:
                     "logic_gaps": len(issues["operational"])
                 }
             },
-            "quick_fixes": quick_fixes,
+            "quick_fixes": [],
             "visual_data": {
                 "labels": ["Common", "Code Only", "Doc Only"],
                 "values": [len(analysis["common_words"]), len(issues["missing_code"]), len(issues["missing_docs"])]
@@ -180,6 +150,3 @@ class StatisticalAnalyzer:
 
 def symmetric_analysis(code_text: str, doc_text: str):
     return StatisticalAnalyzer().symmetric_analysis(code_text, doc_text)
-
-def compute_similarity(text1: str, text2: str):
-    return StatisticalAnalyzer().compute_similarity(text1, text2)
