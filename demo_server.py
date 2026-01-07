@@ -102,16 +102,26 @@ async def analyze(
                             if isinstance(item, ast.FunctionDef):
                                 code_elements["methods"].add(f"{node.name}.{item.name}")
             except: pass
+        else:
+            # Generic detection for Java, C++, JS, etc.
+            # Look for class Name
+            classes = re.findall(r'(?:public\s+|private\s+|protected\s+)?class\s+([A-Za-z_][A-Za-z0-9_]*)', content)
+            code_elements["classes"].update(classes)
+            # Look for function/method patterns: type name(args)
+            funcs = re.findall(r'(?:public|private|protected|static|\s) +[\w\<\>\[\]]+\s+([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*\{', content)
+            code_elements["functions"].update(funcs)
 
     for fname, content in doc_map.items():
         if fname.lower().endswith(('.md', '.txt')):
-            # Flexible header detection (## function_name, ## Function: login, etc.)
-            headers = re.findall(r'##\s+(?:[Ff]unction:?\s+|[Cc]lass:?\s+)?([\w\.]+)', content)
+            # Flexible header detection
+            headers = re.findall(r'(?:#+|Title:|Name:)\s+([\w\.]+)', content)
             doc_elements["functions"].update(headers)
             doc_elements["classes"].update(headers)
-            # Also look for bolded names in list items
-            items = re.findall(r'-\s+\*\*([\w\.]+)\*\*', content)
+            # Also look for bolded / monospaced names in list items or text
+            items = re.findall(r'(?:- |\n|\s)\*\*([\w\.]+)\*\*', content)
             doc_elements["functions"].update(items)
+            code_refs = re.findall(r'`([\w\.]+)`', content)
+            doc_elements["functions"].update(code_refs)
 
     missing_funcs = code_elements["functions"] - doc_elements["functions"]
     missing_classes = code_elements["classes"] - doc_elements["classes"]

@@ -131,38 +131,47 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
                                         </svg></span>
-                                    <h2 class="text-xl font-bold">1. Source Code ZIP</h2>
+                                    <h2 class="text-xl font-bold">1. Project ZIP (Java/Python/All)</h2>
                                 </div>
                                 <span
-                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Automated
-                                    Extraction</span>
+                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Process
+                                    Overall Files</span>
                             </div>
 
-                            <div class="relative group" id="codeDropZone">
-                                <label for="code_file"
-                                    class="flex flex-col items-center justify-center w-full min-h-[220px] p-8 border-4 border-dashed border-slate-700 rounded-[32px] cursor-pointer hover:border-indigo-500 hover:bg-indigo-500/5 transition-all text-center space-y-4 shadow-inner relative overflow-hidden">
-                                    <input type="file" name="code_file" id="code_file" class="hidden" accept=".zip" />
+                            <div class="relative min-h-[260px] group" id="codeDropZone">
+                                <!-- Actual Input (Fully Transparent Overlay) -->
+                                <input type="file" name="code_file" id="code_file" accept=".zip"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50 overflow-hidden"
+                                    title="Click to upload Project ZIP" />
 
-                                    <!-- Dynamic States -->
+                                <!-- Visual Overlay (Clickable through Input) -->
+                                <div id="code_visual_box"
+                                    class="flex flex-col items-center justify-center w-full min-h-[260px] p-8 border-4 border-dashed border-slate-700 rounded-[40px] transition-all text-center space-y-6 shadow-inner relative overflow-hidden bg-slate-900/40 group-hover:border-indigo-500 group-hover:bg-indigo-500/5">
+
+                                    <!-- Idle State -->
                                     <div id="code_idle" class="space-y-4">
-                                        <div class="text-6xl group-hover:scale-110 transition-transform duration-300">📦
+                                        <div class="text-7xl group-hover:scale-110 transition-transform duration-500">📁
                                         </div>
-                                        <div class="space-y-1">
-                                            <p class="text-lg font-bold text-slate-300">Drop Python Project ZIP here</p>
-                                            <p class="text-xs text-slate-500">FastAPI, Django, or custom modules
-                                                supported</p>
+                                        <div class="space-y-2">
+                                            <p class="text-xl font-black text-white">Click to Upload ZIP</p>
+                                            <p class="text-xs text-slate-500 px-4">Automatic extraction of Java, Python,
+                                                C++, and JS files for consistency check</p>
                                         </div>
+                                        <div
+                                            class="mt-4 px-6 py-2 bg-indigo-600 rounded-full text-xs font-bold uppercase tracking-widest text-white inline-block shadow-lg group-hover:bg-indigo-500 transition-colors">
+                                            Choose File</div>
                                     </div>
 
-                                    <div id="code_success" class="hidden space-y-3 animate-fade-in">
+                                    <!-- Success State -->
+                                    <div id="code_success" class="hidden space-y-4 animate-fade-in">
                                         <div
-                                            class="w-16 h-16 bg-indigo-500/20 rounded-full flex items-center justify-center mx-auto">
-                                            <span class="text-3xl">✅</span>
+                                            class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto border border-emerald-500/30">
+                                            <span class="text-4xl text-emerald-400">✓</span>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-bold text-indigo-400">Project Loaded</p>
+                                            <p class="text-lg font-bold text-emerald-400">Overall Project Loaded</p>
                                             <p id="code_file_name_display"
-                                                class="text-[11px] font-mono text-slate-500 mt-1 max-w-[200px] truncate">
+                                                class="text-xs font-mono text-slate-500 mt-2 max-w-[240px] truncate mx-auto bg-black/40 px-3 py-1 rounded">
                                             </p>
                                         </div>
                                     </div>
@@ -171,22 +180,8 @@
                                     <div
                                         class="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     </div>
-                                </label>
-                            </div>
-
-                            <!-- Reduced Paste Part -->
-                            <details class="group">
-                                <summary
-                                    class="text-xs text-slate-500 cursor-pointer hover:text-indigo-400 transition-colors flex items-center space-x-1 outline-none">
-                                    <span class="group-open:rotate-90 transition-transform">▶</span>
-                                    <span>Or paste code snippet (Manual Mode)</span>
-                                </summary>
-                                <div class="mt-4 animate-fade-in">
-                                    <textarea name="code_text"
-                                        class="form-input w-full h-32 p-4 rounded-xl code-font text-xs"
-                                        placeholder="Paste your function or class here...">{{ code if code else '' }}</textarea>
                                 </div>
-                            </details>
+                            </div>
                         </div>
 
                         <!-- AUTOMATED UPLOAD COLUMN (DOCS) -->
@@ -202,34 +197,43 @@
                                     <h2 class="text-xl font-bold">2. Documentation ZIP</h2>
                                 </div>
                                 <span
-                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Optional</span>
+                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Auto-Analysis</span>
                             </div>
 
-                            <div class="relative group" id="docDropZone">
-                                <label for="doc_file"
-                                    class="flex flex-col items-center justify-center w-full min-h-[220px] p-8 border-4 border-dashed border-slate-700 rounded-[32px] cursor-pointer hover:border-purple-500 hover:bg-purple-500/5 transition-all text-center space-y-4 shadow-inner relative overflow-hidden">
-                                    <input type="file" name="doc_file" id="doc_file" class="hidden"
-                                        accept=".zip,.md,.txt" />
+                            <div class="relative min-h-[260px] group" id="docDropZone">
+                                <!-- Actual Input (Fully Transparent Overlay) -->
+                                <input type="file" name="doc_file" id="doc_file" accept=".zip,.md,.txt"
+                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50 overflow-hidden"
+                                    title="Click to upload Documentation ZIP" />
 
-                                    <!-- Dynamic States -->
+                                <!-- Visual Overlay -->
+                                <div id="doc_visual_box"
+                                    class="flex flex-col items-center justify-center w-full min-h-[260px] p-8 border-4 border-dashed border-slate-700 rounded-[40px] transition-all text-center space-y-6 shadow-inner relative overflow-hidden bg-slate-900/40 group-hover:border-purple-500 group-hover:bg-purple-500/5">
+
+                                    <!-- Idle State -->
                                     <div id="doc_idle" class="space-y-4">
-                                        <div class="text-6xl group-hover:scale-110 transition-transform duration-300">📖
+                                        <div class="text-7xl group-hover:scale-110 transition-transform duration-500">📚
                                         </div>
-                                        <div class="space-y-1">
-                                            <p class="text-lg font-bold text-slate-300">Drop Documentation ZIP/File</p>
-                                            <p class="text-xs text-slate-500">Markdown (.md) or Text (.txt) archives</p>
+                                        <div class="space-y-2">
+                                            <p class="text-xl font-black text-white">Upload Docs ZIP</p>
+                                            <p class="text-xs text-slate-500 px-4">Markdown, RST, or Text files
+                                                aggregated for semantic verification</p>
                                         </div>
+                                        <div
+                                            class="mt-4 px-6 py-2 bg-purple-600 rounded-full text-xs font-bold uppercase tracking-widest text-white inline-block shadow-lg group-hover:bg-purple-500 transition-colors">
+                                            Choose Docs</div>
                                     </div>
 
-                                    <div id="doc_success" class="hidden space-y-3 animate-fade-in">
+                                    <!-- Success State -->
+                                    <div id="doc_success" class="hidden space-y-4 animate-fade-in">
                                         <div
-                                            class="w-16 h-16 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto">
-                                            <span class="text-3xl">✅</span>
+                                            class="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-purple-500/30">
+                                            <span class="text-4xl text-purple-400">✓</span>
                                         </div>
                                         <div>
-                                            <p class="text-sm font-bold text-purple-400">Docs Loaded</p>
+                                            <p class="text-lg font-bold text-purple-400">Docs Synchronized</p>
                                             <p id="doc_file_name_display"
-                                                class="text-[11px] font-mono text-slate-500 mt-1 max-w-[200px] truncate">
+                                                class="text-xs font-mono text-slate-500 mt-2 max-w-[240px] truncate mx-auto bg-black/40 px-3 py-1 rounded">
                                             </p>
                                         </div>
                                     </div>
@@ -238,22 +242,8 @@
                                     <div
                                         class="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                                     </div>
-                                </label>
-                            </div>
-
-                            <!-- Reduced Paste Part -->
-                            <details class="group">
-                                <summary
-                                    class="text-xs text-slate-500 cursor-pointer hover:text-purple-400 transition-colors flex items-center space-x-1 outline-none">
-                                    <span class="group-open:rotate-90 transition-transform">▶</span>
-                                    <span>Or paste docs snippet (Manual Mode)</span>
-                                </summary>
-                                <div class="mt-4 animate-fade-in">
-                                    <textarea name="doc_text"
-                                        class="form-input w-full h-32 p-4 rounded-xl code-font text-xs"
-                                        placeholder="Paste your documentation or markdown here...">{{ doc if doc else '' }}</textarea>
                                 </div>
-                            </details>
+                            </div>
                         </div>
                     </div>
 
