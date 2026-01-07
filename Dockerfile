@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Expose the port (Render/Railway use the PORT env var, but 8000 is default)
-EXPOSE 8000
+# Expose the port (Streamlit defaults to 8501, but we use PORT env var)
+EXPOSE 8501
 
 # Run the application
-CMD ["python", "demo_server.py"]
+ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
