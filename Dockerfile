@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Expose the port (Streamlit defaults to 8501, but we use PORT env var)
-EXPOSE 8501
+# Expose the port (Render uses PORT env var)
+EXPOSE 8000
 
 # Run the application
-ENTRYPOINT ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["python", "demo_server.py"]

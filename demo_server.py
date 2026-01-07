@@ -1,165 +1,116 @@
-
 from fastapi import FastAPI, Request, File, UploadFile, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
-
-from src.agent.stat_analysis import symmetric_analysis
+import zipfile
+import io
 import ast
 import re
+from src.agent.stat_analysis import symmetric_analysis
 
-app = FastAPI(title="CraftAI - DocSync Agent")
-
-# Setup templates
+app = FastAPI(title="CraftAI - DocSync Professional")
 templates = Jinja2Templates(directory="templates")
 
+# --- UTILS ---
+async def extract_from_zip(zip_content, target_extensions):
+    file_map = {}
+    try:
+        with zipfile.ZipFile(io.BytesIO(zip_content)) as z:
+            for name in z.namelist():
+                if name.endswith('/'): continue
+                if any(name.lower().endswith(ext.lower()) for ext in target_extensions):
+                    with z.open(name) as f:
+                        file_map[name] = f.read().decode("utf-8", errors="ignore")
+    except Exception as e:
+        print(f"Zip extraction error: {e}")
+    return file_map
+
+# --- CORE ENDPOINT ---
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request, "result": None})
-
-import zipfile
-import io
 
 @app.post("/analyze", response_class=HTMLResponse)
 async def analyze(
     request: Request,
     code_file: UploadFile = File(None),
-    doc_file: UploadFile = File(None),
-    code_text: str = Form(None),
-    doc_text: str = Form(None)
+    doc_file: UploadFile = File(None)
 ):
-    code_ex = ['.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h', '.cs', '.go', '.rs', '.php', '.rb', '.pyi']
-    doc_ex = ['.md', '.txt', '.rst', '.html', '.htm', '.markdown']
+    code_ex = ['.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h', '.cs', '.go', '.rs', '.php', '.rb']
+    doc_ex = ['.md', '.txt', '.rst', '.html']
 
-    async def extract_from_zip(zip_content, target_extensions):
-        file_map = {}
-        try:
-            with zipfile.ZipFile(io.BytesIO(zip_content)) as z:
-                for name in z.namelist():
-                    if name.endswith('/'): continue
-                    if any(name.lower().endswith(ext.lower()) for ext in target_extensions):
-                        with z.open(name) as f:
-                            file_map[name] = f.read().decode("utf-8", errors="ignore")
-        except Exception as e:
-            print(f"Zip extraction error: {e}")
-        return file_map
-
-    # 1. Read files into memory once
-    c_file_data = await code_file.read() if code_file and code_file.filename else None
-    d_file_data = await doc_file.read() if doc_file and doc_file.filename else None
-
-    code_map = {} # {filename: content}
+    code_map = {}
     doc_map = {}
 
-    # 2. Extract Data
-    if code_text:
-        code_map["manual_input.py"] = code_text
-    if doc_text:
-        doc_map["manual_input.md"] = doc_text
-
-    if c_file_data:
+    # 1. Process Code Input
+    if code_file and code_file.filename:
+        c_bytes = await code_file.read()
         if code_file.filename.lower().endswith('.zip'):
-            extracted = await extract_from_zip(c_file_data, code_ex)
-            code_map.update(extracted)
-            if not d_file_data and not doc_text:
-                doc_map.update(await extract_from_zip(c_file_data, doc_ex))
+            code_map = await extract_from_zip(c_bytes, code_ex)
+            # Peek for docs in same zip
+            doc_map.update(await extract_from_zip(c_bytes, doc_ex))
         else:
-            code_map[code_file.filename] = c_file_data.decode("utf-8", errors="ignore")
+            code_map[code_file.filename] = c_bytes.decode("utf-8", errors="ignore")
 
-    if d_file_data:
+    # 2. Process Doc Input
+    if doc_file and doc_file.filename:
+        d_bytes = await doc_file.read()
         if doc_file.filename.lower().endswith('.zip'):
-            extracted = await extract_from_zip(d_file_data, doc_ex)
-            doc_map.update(extracted)
-            if not c_file_data and not code_text:
-                code_map.update(await extract_from_zip(d_file_data, code_ex))
+            doc_map.update(await extract_from_zip(d_bytes, doc_ex))
         else:
-            doc_map[doc_file.filename] = d_file_data.decode("utf-8", errors="ignore")
+            doc_map[doc_file.filename] = d_bytes.decode("utf-8", errors="ignore")
 
-    # 3. Aggregate for Statistical Analysis
-    final_code_text = "\n".join(code_map.values())
-    final_doc_text = "\n".join(doc_map.values())
+    if not code_map:
+        return templates.TemplateResponse("index.html", {"request": request, "result": "no_input"})
 
-    # 4. Structural Analysis (Reference Match Logic)
-    from src.utils.python_parser import parse_python_file
-    from src.utils.doc_parser import extract_documented_items
-    import tempfile
-    
-    code_elements = {"functions": set(), "classes": set(), "methods": set()}
-    doc_elements = {"functions": set(), "classes": set()}
-
+    # 3. Structural Engine (Multi-Language)
+    code_elements = {"functions": set(), "classes": set()}
     for fname, content in code_map.items():
         if fname.endswith('.py'):
             try:
                 tree = ast.parse(content)
                 for node in ast.walk(tree):
-                    if isinstance(node, ast.FunctionDef):
-                        code_elements["functions"].add(node.name)
-                    if isinstance(node, ast.ClassDef):
-                        code_elements["classes"].add(node.name)
-                        for item in node.body:
-                            if isinstance(item, ast.FunctionDef):
-                                code_elements["methods"].add(f"{node.name}.{item.name}")
+                    if isinstance(node, (ast.FunctionDef, ast.ClassDef)): code_elements["functions" if isinstance(node, ast.FunctionDef) else "classes"].add(node.name)
             except: pass
         else:
-            # Generic detection for Java, C++, JS, etc.
-            # Look for class Name
-            classes = re.findall(r'(?:public\s+|private\s+|protected\s+)?class\s+([A-Za-z_][A-Za-z0-9_]*)', content)
+            # Generic Scanner
+            classes = re.findall(r'class\s+([A-Za-z_][A-Za-z0-9_]*)', content)
             code_elements["classes"].update(classes)
-            # Look for function/method patterns: type name(args)
-            funcs = re.findall(r'(?:public|private|protected|static|\s) +[\w\<\>\[\]]+\s+([A-Za-z_][A-Za-z0-9_]*)\s*\([^)]*\)\s*\{', content)
+            funcs = re.findall(r'(?:public|private|static|\s)+[\w\<\>]+\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(', content)
             code_elements["functions"].update(funcs)
 
-    for fname, content in doc_map.items():
-        if fname.lower().endswith(('.md', '.txt')):
-            # Flexible header detection
-            headers = re.findall(r'(?:#+|Title:|Name:)\s+([\w\.]+)', content)
-            doc_elements["functions"].update(headers)
-            doc_elements["classes"].update(headers)
-            # Also look for bolded / monospaced names in list items or text
-            items = re.findall(r'(?:- |\n|\s)\*\*([\w\.]+)\*\*', content)
-            doc_elements["functions"].update(items)
-            code_refs = re.findall(r'`([\w\.]+)`', content)
-            doc_elements["functions"].update(code_refs)
+    # 4. Doc Engine
+    doc_elements = {"items": set()}
+    for content in doc_map.values():
+        items = re.findall(r'(?:#+|\*\*|`)\s*([\w\.]+)', content)
+        doc_elements["items"].update(items)
 
-    missing_funcs = code_elements["functions"] - doc_elements["functions"]
-    missing_classes = code_elements["classes"] - doc_elements["classes"]
-    missing_methods = code_elements["methods"] - doc_elements["functions"]
+    missing_items = (code_elements["functions"] | code_elements["classes"]) - doc_elements["items"]
 
-    # Run Analysis
-    result = None
-    if final_code_text.strip() or final_doc_text.strip():
-        result = symmetric_analysis(final_code_text, final_doc_text)
-        result["structural"] = {
-            "files_analyzed": len(code_map) + len(doc_map),
-            "missing_functions_count": len(missing_funcs),
-            "missing_classes_count": len(missing_classes),
-            "missing_methods_count": len(missing_methods),
-            "missing_items": {
-                "functions": sorted(list(missing_funcs))[:10],
-                "classes": sorted(list(missing_classes))[:10],
-                "methods": sorted(list(missing_methods))[:10]
-            }
-        }
-    else:
-        result = {
-            "forward_match": 0, "backward_match": 0, "symmetric_score": 0,
-            "match_label": "No Input", "match_icon": "❓",
-            "analysis_summary": "Please upload a ZIP file or paste text to begin analysis.",
-            "issue_summary": {"total_issues": 0, "categories": {"logic_gaps": 0, "missing_in_docs": 0, "zombie_docs": 0}},
-            "visual_data": {"labels": ["Common", "Code", "Doc"], "values": [0,0,0]},
-            "structural": {"files_analyzed": 0, "missing_functions_count": 0, "missing_classes_count": 0, "missing_methods_count": 0, "missing_items": {"functions":[],"classes":[],"methods":[]}},
-            "details": {"suggestions": ["Provide code/docs."], "common_words": [], "missing_in_code": [], "missing_in_doc": []}
-        }
-    
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "result": result,
-        "code": "[ZIP Content Extracted]" if c_file_data and code_file.filename.lower().endswith('.zip') else final_code_text[:500],
-        "doc": "[ZIP Content Extracted]" if d_file_data and doc_file.filename.lower().endswith('.zip') else final_doc_text[:500]
-    })
+    # 5. Semantic Analysis
+    final_code_text = "\n".join(code_map.values())
+    final_doc_text = "\n".join(doc_map.values())
+    analysis = symmetric_analysis(final_code_text, final_doc_text)
+
+    # 6. Build Result for "Figma" Frontend
+    result = {
+        "score": int(analysis['symmetric_score'] * 100),
+        "label": analysis['match_label'],
+        "icon": analysis['match_icon'],
+        "summary": analysis['analysis_summary'],
+        "stats": {
+            "files": len(code_map) + len(doc_map),
+            "logic_gaps": analysis['issue_summary']['categories']['logic_gaps'],
+            "missing_in_docs": len(missing_items)
+        },
+        "visual": analysis['visual_data']['values'],
+        "missing_list": sorted(list(missing_items))[:10],
+        "export_raw": f"Score: {analysis['symmetric_score']}\nStatus: {analysis['match_label']}\n{analysis['analysis_summary']}"
+    }
+
+    return templates.TemplateResponse("index.html", {"request": request, "result": result})
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

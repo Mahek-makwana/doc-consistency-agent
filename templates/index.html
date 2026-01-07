@@ -4,70 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CraftAI - DocSync Agent | Premium Documentation Consistency</title>
-    <meta name="description" content="Validate documentation and code alignment with advanced statistical analysis.">
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap"
-        rel="stylesheet">
-
+    <title>CraftAI - DocSync Professional</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --accent: #8b5cf6;
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-        }
-
         body {
             font-family: 'Outfit', sans-serif;
-            background: var(--bg-gradient);
-            color: #f8fafc;
-            min-height: 100vh;
+            background-color: #010409;
+            color: #e6edf3;
+            overflow-x: hidden;
         }
 
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
+        .glass {
+            background: rgba(22, 27, 34, 0.7);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
         }
 
         .gradient-text {
-            background: linear-gradient(to right, #818cf8, #c084fc);
+            background: linear-gradient(135deg, #6366f1, #a855f7);
             -webkit-background-clip: text;
-            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .form-input {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #f1f5f9;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-            outline: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(to right, var(--primary), var(--accent));
+        .btn-gradient {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .btn-primary:hover {
+        .btn-gradient:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
 
-        .code-font {
-            font-family: 'JetBrains Mono', monospace;
+        .upload-zone {
+            border: 2px dashed #30363d;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
         }
 
         @keyframes fadeIn {
@@ -82,548 +62,229 @@
             }
         }
 
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
+        .animate-fade {
+            animation: fadeIn 0.8s ease-out forwards;
         }
     </style>
 </head>
 
-<body class="p-6 md:p-12">
+<body class="p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto space-y-12">
-        <!-- HEADER -->
-        <header class="text-center space-y-4 animate-fade-in">
-            <div
-                class="inline-block px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-semibold tracking-wide uppercase">
-                AI Component Consistency
-            </div>
-            <h1 class="text-5xl md:text-6xl font-bold tracking-tight">
-                <span class="gradient-text">CraftAI</span> - DocSync Agent
-            </h1>
-            <p class="text-slate-400 text-lg max-w-2xl mx-auto">
-                Bridge the gap between your source code and documentation using symmetric statistical analysis and
-                operational intent detection.
-            </p>
-        </header>
+    <!-- HEADER (Figma Style) -->
+    <header class="max-w-6xl mx-auto text-center mb-12 animate-fade">
+        <div
+            class="inline-block px-4 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-bold tracking-widest uppercase mb-4 border border-indigo-500/20">
+            Professional AI Consistency Audit
+        </div>
+        <h1 class="text-5xl md:text-7xl font-black mb-4"><span class="gradient-text">CraftAI</span> DocSync</h1>
+        <p class="text-slate-500 text-lg max-w-2xl mx-auto">Automated cross-language logic alignment between your code
+            repository and technical documentation.</p>
+    </header>
 
-        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <!-- INPUT SECTION -->
-            <div class="lg:col-span-12 glass-card p-8 animate-fade-in" style="animation-delay: 0.1s;">
-                <form action="/analyze" method="post" enctype="multipart/form-data" class="space-y-8" id="analysisForm">
-                    <div id="loadingOverlay"
-                        class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center">
-                        <div class="text-center space-y-4">
-                            <div
-                                class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto">
-                            </div>
-                            <p class="text-xl font-bold gradient-text animate-pulse">Running Structural Analysis...</p>
-                            <p class="text-slate-400 text-sm">Synchronizing logic and documentation via CraftAI</p>
+    <main class="max-w-6xl mx-auto space-y-12">
+
+        <!-- UPLOAD SECTION -->
+        <section class="glass p-8 animate-fade" style="animation-delay: 0.2s">
+            <form action="/analyze" method="POST" enctype="multipart/form-data" id="auditForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Project ZIP / File -->
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                            <span class="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">📦</span>
+                            1. Project Source (ZIP/Code)
+                        </h3>
+                        <div class="upload-zone rounded-3xl p-10 text-center relative h-48 flex flex-col justify-center gap-2"
+                            onclick="document.getElementById('code_file').click()">
+                            <p class="text-slate-400 font-medium" id="code_label">Click to upload Project ZIP or
+                                individual script</p>
+                            <p class="text-[10px] text-slate-600 uppercase tracking-tighter">Java, Python, JS, C++, Go,
+                                etc.</p>
+                            <input type="file" name="code_file" id="code_file" class="hidden"
+                                onchange="updateLabel('code')">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- AUTOMATED UPLOAD COLUMN (CODE) -->
-                        <div class="space-y-6">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    <span class="bg-indigo-500/20 p-2 rounded-lg"><svg class="w-5 h-5 text-indigo-400"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-                                        </svg></span>
-                                    <h2 class="text-xl font-bold">1. Project ZIP (Java/Python/All)</h2>
-                                </div>
-                                <span
-                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Process
-                                    Overall Files</span>
-                            </div>
-
-                            <div class="relative min-h-[260px] group" id="codeDropZone">
-                                <!-- Actual Input (Fully Transparent Overlay) -->
-                                <input type="file" name="code_file" id="code_file" accept=".zip"
-                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50 overflow-hidden"
-                                    title="Click to upload Project ZIP" />
-
-                                <!-- Visual Overlay (Clickable through Input) -->
-                                <div id="code_visual_box"
-                                    class="flex flex-col items-center justify-center w-full min-h-[260px] p-8 border-4 border-dashed border-slate-700 rounded-[40px] transition-all text-center space-y-6 shadow-inner relative overflow-hidden bg-slate-900/40 group-hover:border-indigo-500 group-hover:bg-indigo-500/5">
-
-                                    <!-- Idle State -->
-                                    <div id="code_idle" class="space-y-4">
-                                        <div class="text-7xl group-hover:scale-110 transition-transform duration-500">📁
-                                        </div>
-                                        <div class="space-y-2">
-                                            <p class="text-xl font-black text-white">Click to Upload ZIP</p>
-                                            <p class="text-xs text-slate-500 px-4">Automatic extraction of Java, Python,
-                                                C++, and JS files for consistency check</p>
-                                        </div>
-                                        <div
-                                            class="mt-4 px-6 py-2 bg-indigo-600 rounded-full text-xs font-bold uppercase tracking-widest text-white inline-block shadow-lg group-hover:bg-indigo-500 transition-colors">
-                                            Choose File</div>
-                                    </div>
-
-                                    <!-- Success State -->
-                                    <div id="code_success" class="hidden space-y-4 animate-fade-in">
-                                        <div
-                                            class="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto border border-emerald-500/30">
-                                            <span class="text-4xl text-emerald-400">✓</span>
-                                        </div>
-                                        <div>
-                                            <p class="text-lg font-bold text-emerald-400">Overall Project Loaded</p>
-                                            <p id="code_file_name_display"
-                                                class="text-xs font-mono text-slate-500 mt-2 max-w-[240px] truncate mx-auto bg-black/40 px-3 py-1 rounded">
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Hover Glow -->
-                                    <div
-                                        class="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- AUTOMATED UPLOAD COLUMN (DOCS) -->
-                        <div class="space-y-6">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    <span class="bg-purple-500/20 p-2 rounded-lg"><svg class="w-5 h-5 text-purple-400"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                            </path>
-                                        </svg></span>
-                                    <h2 class="text-xl font-bold">2. Documentation ZIP</h2>
-                                </div>
-                                <span
-                                    class="text-[10px] text-slate-500 font-bold uppercase tracking-widest bg-slate-800 px-2 py-0.5 rounded">Auto-Analysis</span>
-                            </div>
-
-                            <div class="relative min-h-[260px] group" id="docDropZone">
-                                <!-- Actual Input (Fully Transparent Overlay) -->
-                                <input type="file" name="doc_file" id="doc_file" accept=".zip,.md,.txt"
-                                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50 overflow-hidden"
-                                    title="Click to upload Documentation ZIP" />
-
-                                <!-- Visual Overlay -->
-                                <div id="doc_visual_box"
-                                    class="flex flex-col items-center justify-center w-full min-h-[260px] p-8 border-4 border-dashed border-slate-700 rounded-[40px] transition-all text-center space-y-6 shadow-inner relative overflow-hidden bg-slate-900/40 group-hover:border-purple-500 group-hover:bg-purple-500/5">
-
-                                    <!-- Idle State -->
-                                    <div id="doc_idle" class="space-y-4">
-                                        <div class="text-7xl group-hover:scale-110 transition-transform duration-500">📚
-                                        </div>
-                                        <div class="space-y-2">
-                                            <p class="text-xl font-black text-white">Upload Docs ZIP</p>
-                                            <p class="text-xs text-slate-500 px-4">Markdown, RST, or Text files
-                                                aggregated for semantic verification</p>
-                                        </div>
-                                        <div
-                                            class="mt-4 px-6 py-2 bg-purple-600 rounded-full text-xs font-bold uppercase tracking-widest text-white inline-block shadow-lg group-hover:bg-purple-500 transition-colors">
-                                            Choose Docs</div>
-                                    </div>
-
-                                    <!-- Success State -->
-                                    <div id="doc_success" class="hidden space-y-4 animate-fade-in">
-                                        <div
-                                            class="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto border border-purple-500/30">
-                                            <span class="text-4xl text-purple-400">✓</span>
-                                        </div>
-                                        <div>
-                                            <p class="text-lg font-bold text-purple-400">Docs Synchronized</p>
-                                            <p id="doc_file_name_display"
-                                                class="text-xs font-mono text-slate-500 mt-2 max-w-[240px] truncate mx-auto bg-black/40 px-3 py-1 rounded">
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Hover Glow -->
-                                    <div
-                                        class="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="submitBtn"
-                        class="btn-primary w-full py-6 rounded-2xl text-xl font-extrabold shadow-2xl flex items-center justify-center space-x-3 transition-all">
-                        <span>🚀 Run Consistency Check</span>
-                    </button>
-                </form>
-            </div>
-
-            <!-- PREMIUM DASHBOARD SECTION -->
-            {% if result %}
-            <div id="results" class="lg:col-span-12 space-y-10 animate-fade-in" style="animation-delay: 0.2s;">
-
-                <!-- 1. ANALYSIS SUMMARY -->
-                <div
-                    class="bg-slate-800/40 p-8 rounded-[32px] border border-slate-700 shadow-2xl relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <svg class="w-24 h-24 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                    </div>
-                    <div class="relative">
-                        <h2 class="text-3xl font-extrabold gradient-text mb-4">Analysis Summary</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-slate-300">
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-3">
-                                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                    <p><strong>Files Analyzed:</strong> {{ result.structural.files_analyzed }} total
-                                        objects</p>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
-                                    <p><strong>Alignment Mode:</strong> Structural & Semantic Sync</p>
-                                </div>
-                            </div>
-                            <div class="p-6 rounded-2xl bg-slate-900/50 border border-white/5">
-                                <p class="text-sm font-light leading-relaxed">{{ result.analysis_summary }}</p>
-                            </div>
+                    <!-- Docs ZIP / File -->
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                            <span class="p-2 bg-purple-500/20 rounded-lg text-purple-400">📚</span>
+                            2. Documentation (Optional)
+                        </h3>
+                        <div class="upload-zone rounded-3xl p-10 text-center relative h-48 flex flex-col justify-center gap-2"
+                            onclick="document.getElementById('doc_file').click()">
+                            <p class="text-slate-400 font-medium" id="doc_label">Upload Docs ZIP or separate .md files
+                            </p>
+                            <p class="text-[10px] text-slate-600 uppercase tracking-tighter">Markdown, Text, RST</p>
+                            <input type="file" name="doc_file" id="doc_file" class="hidden"
+                                onchange="updateLabel('doc')">
                         </div>
                     </div>
                 </div>
 
+                <button type="submit"
+                    class="w-full mt-8 btn-gradient py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3">
+                    🚀 INITIATE CONSISTENCY AUDIT
+                </button>
+            </form>
+        </section>
+
+        {% if result %}
+        <!-- REPORT DASHBOARD (The 8 Key Sections) -->
+        <section class="space-y-8 animate-fade">
+            <div class="flex items-center justify-between">
+                <h2 class="text-3xl font-black">{{ result.icon }} {{ result.label }} Report</h2>
+                <div class="text-4xl font-black gradient-text">{{ result.score }}%</div>
+            </div>
+
+            <!-- GRID OF INSIGHTS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- 1. ANALYSIS SUMMARY -->
+                <div class="glass p-6 md:col-span-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">1. Analysis Summary</h4>
+                    <p class="text-slate-300 leading-relaxed">{{ result.summary }}</p>
+                </div>
+
                 <!-- 2. STATISTIC REPORT -->
-                <div class="space-y-6">
-                    <h3 class="text-2xl font-bold flex items-center space-x-3">
-                        <span class="bg-indigo-500/20 p-2 rounded-lg text-indigo-400">📊</span>
-                        <span>Statistic Report</span>
-                    </h3>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="glass-card p-6 border-l-4 border-indigo-500">
-                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Common Terms
-                            </p>
-                            <h4 class="text-3xl font-black text-indigo-400">{{ result.details.common_words|length }}
-                            </h4>
+                <div class="glass p-6">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">2. Statistic Report</h4>
+                    <div class="space-y-4">
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-slate-400">Files Analyzed</span>
+                            <span class="font-bold">{{ result.stats.files }}</span>
                         </div>
-                        <div class="glass-card p-6 border-l-4 border-red-500">
-                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Code Gaps</p>
-                            <h4 class="text-3xl font-black text-red-500">{{ result.details.missing_in_doc|length }}</h4>
+                        <div class="flex justify-between border-b border-white/5 pb-2">
+                            <span class="text-slate-400">Linguistic Sync</span>
+                            <span class="font-bold">{{ result.score }}%</span>
                         </div>
-                        <div class="glass-card p-6 border-l-4 border-emerald-500">
-                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Doc Gaps</p>
-                            <h4 class="text-3xl font-black text-emerald-500">{{ result.details.missing_in_code|length }}
-                            </h4>
-                        </div>
-                        <div class="glass-card p-6 border-l-4 border-blue-500">
-                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">Sync Ratio</p>
-                            <h4 class="text-3xl font-black text-blue-400">{{ (result.symmetric_score * 100)|round(1) }}%
-                            </h4>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Structural Gaps</span>
+                            <span class="font-bold text-red-400">{{ result.stats.missing_in_docs }}</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 3. ISSUE SUMMARY -->
-                <div class="space-y-6">
-                    <h3 class="text-2xl font-bold flex items-center space-x-3">
-                        <span class="bg-red-500/20 p-2 rounded-lg text-red-400">🚫</span>
-                        <span>Issue Summary</span>
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div
-                            class="p-5 rounded-2xl bg-red-500/5 border border-red-500/20 flex justify-between items-center">
-                            <div>
-                                <p class="text-xs text-red-400 font-bold uppercase mb-1">Logic Mismatches</p>
-                                <p class="text-2xl font-black">{{ result.issue_summary.categories.logic_gaps }}</p>
-                            </div>
-                            <div class="text-4xl opacity-20">⚠️</div>
+                <div class="glass p-6">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">3. Issue Summary</h4>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2 text-red-400">
+                            <span>🛑</span>
+                            <span>{{ result.stats.logic_gaps }} Logic Gaps Detected</span>
                         </div>
-                        <div
-                            class="p-5 rounded-2xl bg-orange-500/5 border border-orange-500/20 flex justify-between items-center">
-                            <div>
-                                <p class="text-xs text-orange-400 font-bold uppercase mb-1">Missing In Docs</p>
-                                <p class="text-2xl font-black">{{ result.issue_summary.categories.missing_in_docs }}</p>
-                            </div>
-                            <div class="text-4xl opacity-20">🧩</div>
-                        </div>
-                        <div
-                            class="p-5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex justify-between items-center">
-                            <div>
-                                <p class="text-xs text-amber-400 font-bold uppercase mb-1">Zombie Docs</p>
-                                <p class="text-2xl font-black">{{ result.issue_summary.categories.zombie_docs }}</p>
-                            </div>
-                            <div class="text-4xl opacity-20">🧟</div>
+                        <div class="flex items-center gap-2 text-orange-400">
+                            <span>⚠️</span>
+                            <span>{{ result.stats.missing_in_docs }} Undocumented Items</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- 4. ISSUE SUGGESTED -->
-                <div class="space-y-6">
-                    <h3 class="text-2xl font-bold flex items-center space-x-3">
-                        <span class="bg-amber-500/20 p-2 rounded-lg text-amber-400">💡</span>
-                        <span>Issue Suggested (Quick Fixes)</span>
-                    </h3>
-                    <div class="space-y-4">
-                        {% for item in result.structural.missing_items.classes %}
-                        <div class="flex items-center space-x-3 p-4 glass-card bg-slate-800/20">
-                            <span class="text-orange-400">🏗️</span>
-                            <p class="text-sm font-mono"><span
-                                    class="text-orange-400 font-bold mr-2">CLASS_MISSING_DOC:</span> {{ item }}</p>
-                        </div>
+                <div class="glass p-6 md:col-span-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">4. Issue Suggested</h4>
+                    {% if result.missing_list %}
+                    <div class="flex flex-wrap gap-2">
+                        {% for item in result.missing_list %}
+                        <span
+                            class="px-3 py-1 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-lg">Missing:
+                            {{ item }}</span>
                         {% endfor %}
-                        {% for item in result.structural.missing_items.functions %}
-                        <div class="flex items-center space-x-3 p-4 glass-card bg-slate-800/20">
-                            <span class="text-yellow-400">⚙️</span>
-                            <p class="text-sm font-mono"><span
-                                    class="text-yellow-400 font-bold mr-2">FUNC_MISSING_DOC:</span> {{ item }}</p>
-                        </div>
-                        {% endfor %}
-                        {% for item in result.structural.missing_items.methods %}
-                        <div
-                            class="p-3 bg-slate-800/40 rounded-lg flex items-center space-x-3 text-sm border border-slate-700/50">
-                            <span class="text-blue-400 font-bold">🔧 MISSING_DOC_METHOD:</span>
-                            <span class="text-slate-200 font-mono">{{ item }}</span>
-                        </div>
-                        {% endfor %}
-                        {% if not result.structural.missing_items.classes and not
-                        result.structural.missing_items.functions and not result.structural.missing_items.methods %}
-                        <p class="text-slate-500 italic">No structural issues detected.</p>
-                        {% endif %}
                     </div>
+                    {% else %}
+                    <p class="text-emerald-400">No major issues suggested. Documentation is healthy.</p>
+                    {% endif %}
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                    <!-- 5. LOCAL ANALYSIS -->
-                    <div class="glass-card p-10 bg-slate-900/60 border-t-4 border-indigo-500">
-                        <h3 class="text-2xl font-black mb-6">Local Analysis</h3>
-                        <div class="space-y-6 text-slate-300">
-                            <p class="text-sm leading-relaxed">Our CraftAI parser detected structural voids between your
-                                <code>.py</code> modules and the current documentation state. Below is the technical
-                                breakdown:
-                            </p>
-                            <div class="space-y-2">
-                                <div
-                                    class="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-500">
-                                    <span>Analysis Metric</span>
-                                    <span>Delta Detected</span>
-                                </div>
-                                <div class="h-[1px] bg-white/10"></div>
-                                <div class="flex justify-between text-sm">
-                                    <span>Structural Voids</span>
-                                    <span class="text-red-400 font-bold">+{{ result.structural.missing_functions_count +
-                                        result.structural.missing_classes_count }}</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span>Parameter Sync</span>
-                                    <span class="text-emerald-400 font-bold">100% Ok</span>
-                                </div>
-                                <div class="flex justify-between text-sm">
-                                    <span>Intent Match</span>
-                                    <span class="text-amber-400 font-bold">{{ (result.symmetric_score * 100)|round(0)
-                                        }}% Match</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 6. QUICK FIX -->
-                    <div class="glass-card p-10 bg-slate-900/60 border-t-4 border-purple-500">
-                        <h3 class="text-2xl font-black mb-6">Quick Fix</h3>
-                        <div class="space-y-4">
-                            <p class="text-xs text-slate-400 uppercase font-bold tracking-tighter">Recommended Action:
-                            </p>
-                            <div
-                                class="p-6 bg-black/40 rounded-2xl font-mono text-xs text-indigo-300 leading-6 border border-white/5">
-                                Add the following to your documentation:<br><br>
-                                <span class="text-slate-500"># API Overview</span><br>
-                                {% for item in result.structural.missing_items.functions[:2] %}
-                                ## {{ item }}<br>
-                                <span class="text-slate-600">Enter a brief description for {{ item }} here...</span><br>
-                                {% endfor %}
-                            </div>
-                            <button
-                                class="w-full py-3 bg-purple-600/20 hover:bg-purple-600/30 rounded-xl text-purple-400 text-xs font-bold transition-all border border-purple-500/20">
-                                Apply Auto-Doc Suggestion
-                            </button>
-                        </div>
+                <!-- 5. LOCAL ANALYSIS / 6. QUICK FIX -->
+                <div class="glass p-6">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">5. Local Analysis</h4>
+                    <p class="text-slate-400">Project structure verified against cross-language syntax rules.</p>
+                </div>
+                <div class="glass p-6 md:col-span-2">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">6. Quick Fix</h4>
+                    <div class="bg-black/50 p-4 rounded-xl border border-white/5">
+                        <code class="text-indigo-300 text-sm"># Missing Overview<br>
+                        {% for item in result.missing_list[:2] %}
+                        ## {{ item }}<br>Document this logic module immediately.<br>
+                        {% endfor %}
+                        </code>
                     </div>
                 </div>
 
                 <!-- 7. VISUAL SUMMARY -->
-                <div class="glass-card p-10 bg-slate-900/40 relative">
-                    <h3 class="text-2xl font-bold mb-10 text-center">Visual Summary (Documentation Health)</h3>
-                    <div class="h-[300px] w-full flex items-center justify-center p-4">
-                        <canvas id="visualChart"></canvas>
+                <div class="glass p-6 md:col-span-3 flex flex-col md:flex-row items-center gap-8">
+                    <div class="w-full md:w-1/2">
+                        <h4
+                            class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-8 text-center md:text-left">
+                            7. Visual Summary (Alignment Health)</h4>
+                        <canvas id="healthChart" height="200"></canvas>
                     </div>
-                </div>
-
-                <!-- 8. EXPORT ANALYSIS -->
-                <div class="pt-10 border-t border-slate-800">
-                    <div
-                        class="flex flex-col md:flex-row items-center justify-between p-8 bg-indigo-500/5 rounded-[40px] border border-indigo-500/10">
-                        <div class="mb-6 md:mb-0">
-                            <h3 class="text-2xl font-black gradient-text">Export Analysis Report</h3>
-                            <p class="text-slate-500 text-sm mt-1">Download full text report in multiple formats</p>
+                    <div class="w-full md:w-1/2 space-y-4">
+                        <div class="p-4 bg-indigo-500/5 rounded-2xl border border-indigo-500/10">
+                            <h5 class="font-bold text-indigo-400">Semantic Overlap</h5>
+                            <p class="text-sm text-slate-500">How much your documentation explains your logic in human
+                                terms.</p>
                         </div>
-                        <div class="flex flex-wrap gap-4 justify-center">
-                            <button onclick="window.print()"
-                                class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 rounded-2xl text-sm font-bold shadow-xl transition-all hover:-translate-y-1">
-                                📑 PDF Report
-                            </button>
-                            <button onclick="exportReport('word')"
-                                class="px-8 py-3 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-bold shadow-xl transition-all hover:-translate-y-1">
-                                📝 Word Doc
-                            </button>
-                            <button onclick="exportReport('text')"
-                                class="px-8 py-3 bg-slate-700 hover:bg-slate-600 rounded-2xl text-sm font-bold shadow-xl transition-all hover:-translate-y-1">
-                                📄 Text File
-                            </button>
+                        <!-- 8. EXPORT ANALYSIS -->
+                        <div class="p-6 bg-white/5 rounded-2xl flex flex-col gap-4">
+                            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-widest">8. Export Analysis
+                            </h4>
+                            <div class="flex gap-4">
+                                <button onclick="exportDoc('txt')"
+                                    class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold">Word
+                                    (.doc)</button>
+                                <button onclick="exportDoc('txt')"
+                                    class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold">Text
+                                    (.txt)</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </section>
+        {% endif %}
+    </main>
 
-            <!-- Chart.js Logic -->
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script>
-                (function () {
-                    const resultData = {{ result | tojson | safe if result else 'null'
-                }};
-                if (!resultData) return;
-
-                const ctx = document.getElementById('visualChart');
-                if (ctx) {
-                    new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: resultData.visual_data.labels,
-                            datasets: [{
-                                data: resultData.visual_data.values,
-                                backgroundColor: ['#6366f1', '#ef4444', '#10b981'],
-                                borderColor: 'transparent',
-                                hoverOffset: 10
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 12, family: 'Outfit' } } } },
-                            cutout: '75%',
-                            maintainAspectRatio: false
-                        }
-                    });
-                }
-
-                window.exportReport = function (type) {
-                    const content = `CRAFT AI - DOCSYNC REPORT\n========================\n\nScore: ${resultData.symmetric_score}\nStatus: ${resultData.match_label}\n\nSUMMARY:\n${resultData.analysis_summary}\n\nSTRUCTURAL ISSUES:\n- Missing Functions: ${resultData.structural.missing_functions_count}\n- Missing Classes: ${resultData.structural.missing_classes_count}\n- Missing Methods: ${resultData.structural.missing_methods_count}\n\nISSUES:\n- Code terms missing in Doc: ${resultData.issue_summary.categories.missing_in_docs}\n- Doc terms missing in Code: ${resultData.issue_summary.categories.zombie_docs}\n- Logic gaps: ${resultData.issue_summary.categories.logic_gaps}`;
-
-                    let blobType = 'text/plain';
-                    let ext = '.txt';
-
-                    if (type === 'word') {
-                        blobType = 'application/msword';
-                        ext = '.doc';
-                    }
-
-                    const blob = new Blob([content], { type: blobType });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `craftai_report_${new Date().getTime()}${ext}`;
-                    a.click();
-                };
-                }) ();
-            </script>
-            {% endif %}
-        </main>
-
-        <!-- FOOTER -->
-        <footer class="text-center py-12 text-slate-500 text-sm">
-            <p>&copy; 2026 CraftAI - DocSync Agent powered by CraftAI Logic Pipeline. All rights reserved.</p>
-            <div class="mt-2 space-x-4">
-                <a href="#" class="hover:text-indigo-400 transition-colors">Documentation</a>
-                <a href="#" class="hover:text-indigo-400 transition-colors">GitHub Repository</a>
-                <a href="#" class="hover:text-indigo-400 transition-colors">API Dashboard</a>
-            </div>
-        </footer>
-    </div>
+    <footer class="mt-20 text-center pb-12 text-slate-600 text-xs tracking-widest">
+        &copy; 2026 CRAFT AI • PROFESSIONAL CONSISTENCY AGENT
+    </footer>
 
     <script>
-        function setupFileUI(inputId, prefix, activeColor) {
-            const input = document.getElementById(inputId);
-            const label = input.parentElement;
-            const idleDiv = document.getElementById(prefix + '_idle');
-            const successDiv = document.getElementById(prefix + '_success');
-            const fileNameDisplay = document.getElementById(prefix + '_file_name_display');
-
-            function updateUI(file) {
-                if (file) {
-                    console.log(`[CraftAI] ${prefix} file detected:`, file.name);
-                    idleDiv.classList.add('hidden');
-                    successDiv.classList.remove('hidden');
-                    fileNameDisplay.textContent = file.name;
-                    label.classList.add('border-' + activeColor, 'bg-' + activeColor + '/10', 'border-solid');
-                    label.classList.remove('border-dashed', 'border-slate-700');
-                }
+        function updateLabel(id) {
+            const file = document.getElementById(id + '_file').files[0];
+            if (file) {
+                document.getElementById(id + '_label').innerText = "✓ " + file.name;
+                document.getElementById(id + '_label').classList.replace('text-slate-400', 'text-indigo-400');
             }
-
-            // Standard Click Selection
-            input.addEventListener('change', (e) => {
-                if (input.files.length > 0) {
-                    updateUI(input.files[0]);
-                }
-            });
-
-            // Drag and Drop Logic
-            ['dragenter', 'dragover'].forEach(eventName => {
-                label.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    label.classList.add('bg-slate-800', 'scale-[1.02]', 'border-' + activeColor);
-                }, false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                label.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    label.classList.remove('bg-slate-800', 'scale-[1.02]', 'border-' + activeColor);
-                }, false);
-            });
-
-            label.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-
-                if (files.length > 0) {
-                    console.log(`[CraftAI] Drop detected for ${prefix}`);
-                    input.files = files; // Essential: Sync the dropped file to the input
-                    updateUI(files[0]);
-
-                    // Force a change event to be sure
-                    const event = new Event('change', { bubbles: true });
-                    input.dispatchEvent(event);
-                }
-            }, false);
         }
 
-        // Initialize UI components
-        setupFileUI('code_file', 'code', 'indigo-500');
-        setupFileUI('doc_file', 'doc', 'purple-500');
-
-        // Form Submission Safeguard
-        document.getElementById('analysisForm').addEventListener('submit', function (e) {
-            const codeFile = document.getElementById('code_file').files[0];
-            const codeText = document.getElementsByName('code_text')[0].value;
-
-            if (!codeFile && !codeText.trim()) {
-                alert("Please provide source code via ZIP upload or manual paste.");
-                e.preventDefault();
-                return;
-            }
-
-            console.log("[CraftAI] Submitting form...");
-            document.getElementById('loadingOverlay').classList.remove('hidden');
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<span class="flex items-center space-x-2"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>Processing Project ZIP...</span></span>';
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+        {% if result %}
+        const ctx = document.getElementById('healthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Common', 'Logic Only', 'Doc Only'],
+                datasets: [{
+                    data: {{ result.visual | tojson }},
+            backgroundColor: ['#6366f1', '#ef4444', '#10b981'],
+            borderWidth: 0,
+            hoverOffset: 20
+        }]
+            },
+            options: {
+            plugins: { legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Outfit', size: 12 } } } },
+            cutout: '80%'
+        }
         });
+
+        function exportDoc(ext) {
+            const blob = new Blob([`{{ result.export_raw | safe }}`], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `craftai_report_${new Date().getTime()}.${ext}`;
+            a.click();
+        }
+        {% endif %}
     </script>
 </body>
 
