@@ -7,7 +7,7 @@ from datetime import datetime
 
 # --- CONFIGURATION ---
 st.set_page_config(
-    page_title="CraftAI DocSync Dashboard",
+    page_title="CraftAI DocSync Agent",
     page_icon="✨",
     layout="wide",
 )
@@ -171,7 +171,7 @@ def extract_files(uploaded_file, extensions):
     return content
 
 # --- UI LAYOUT ---
-st.markdown("<h1 class='dashboard-title'>DocSync Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='dashboard-title'>CraftAI DocSync Agent</h1>", unsafe_allow_html=True)
 
 col1, col2 = st.columns(2)
 with col1:
