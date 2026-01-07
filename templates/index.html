@@ -15,19 +15,18 @@
             background-color: #050505;
             color: #fff;
             margin: 0;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         .flex-h-screen {
             display: flex;
             height: 100vh;
-            overflow: hidden;
         }
 
         .sidebar {
             width: 288px;
             background: #050505;
-            border-right: 1px solid rgba(168, 85, 247, 0.1);
+            border-right: 1px solid rgba(168, 85, 247, 0.15);
             display: flex;
             flex-direction: column;
         }
@@ -39,28 +38,28 @@
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
             padding: 24px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: 0.3s;
         }
 
-        .btn-gradient {
-            background: linear-gradient(to right, #4f46e5, #9333ea);
-            transition: all 0.3s ease;
+        .glass-card:hover {
+            border-color: rgba(168, 85, 247, 0.3);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .btn-nav {
             cursor: pointer;
             transition: 0.3s;
+            color: #666;
         }
 
         .btn-nav.active {
-            background: linear-gradient(to right, #4f46e5, #9333ea) !important;
-            color: white !important;
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
         }
 
         .view-section {
@@ -71,8 +70,9 @@
             display: block;
         }
 
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
+        .btn-gradient {
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            cursor: pointer;
         }
     </style>
 </head>
@@ -84,336 +84,200 @@
         <div class="sidebar">
             <div class="p-8 border-b border-white/5">
                 <div class="flex items-center gap-3">
-                    <div
-                        class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/50">
-                        <i data-lucide="sparkles" class="w-7 h-7 text-white"></i>
-                    </div>
+                    <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center"><i
+                            data-lucide="sparkles" class="w-6 h-6 text-white"></i></div>
                     <div>
-                        <h1 class="font-bold text-white text-xl uppercase tracking-tighter">CraftAI</h1>
-                        <p class="text-[9px] text-purple-400 font-black uppercase tracking-[2.5px]">DocSync Agent</p>
+                        <h1 class="font-bold text-sm uppercase tracking-tighter">CraftAI</h1>
+                        <p class="text-[8px] text-indigo-400 font-black uppercase">DocSync Agent</p>
                     </div>
                 </div>
             </div>
-
-            <nav class="flex-1 p-6 space-y-3">
+            <nav class="flex-1 p-6 space-y-2">
                 <div id="nav-dashboard" onclick="showView('dashboard')"
-                    class="btn-nav flex items-center gap-4 px-5 py-4 rounded-xl text-white active">
-                    <i data-lucide="home" class="w-5 h-5"></i> <span class="font-bold text-sm">Dashboard</span>
-                </div>
+                    class="btn-nav active flex items-center gap-4 px-5 py-4 rounded-xl"><i
+                        data-lucide="layout-dashboard" class="w-5 h-5"></i><span
+                        class="font-bold text-sm">Dashboard</span></div>
                 <div id="nav-reports" onclick="showView('reports')"
-                    class="btn-nav flex items-center gap-4 px-5 py-4 rounded-xl text-gray-500 hover:text-white">
-                    <i data-lucide="file-text" class="w-5 h-5"></i> <span class="font-bold text-sm">Reports</span>
-                </div>
+                    class="btn-nav flex items-center gap-4 px-5 py-4 rounded-xl"><i data-lucide="file-text"
+                        class="w-5 h-5"></i><span class="font-bold text-sm">Reports</span></div>
                 <div id="nav-history" onclick="showView('history')"
-                    class="btn-nav flex items-center gap-4 px-5 py-4 rounded-xl text-gray-500 hover:text-white">
-                    <i data-lucide="history" class="w-5 h-5"></i> <span class="font-bold text-sm">History</span>
-                </div>
+                    class="btn-nav flex items-center gap-4 px-5 py-4 rounded-xl"><i data-lucide="clock"
+                        class="w-5 h-5"></i><span class="font-bold text-sm">History</span></div>
             </nav>
-
-            <div class="p-6 border-t border-white/5">
-                <div class="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5">
-                    <div
-                        class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white">
-                        G</div>
-                    <div>
-                        <p class="text-[9px] font-black text-white uppercase tracking-widest">Guest Mode</p>
-                        <p class="text-[8px] text-gray-500 font-bold">PUBLIC ACCESS</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <!-- MAIN CONTAINER -->
-        <div class="main-container scrollbar-hide">
+        <!-- CONTENT -->
+        <div class="main-container">
+            <!-- DASHBOARD -->
+            <div id="view-dashboard" class="view-section active p-12">
+                <h1 class="text-6xl font-black mb-8 tracking-tighter">Project <span
+                        class="text-indigo-400">Analysis</span></h1>
 
-            <!-- 1. DASHBOARD VIEW -->
-            <div id="view-dashboard" class="view-section active">
-                <div
-                    class="absolute top-0 left-1/4 w-[600px] h-[600px] bg-purple-600/5 rounded-full blur-[120px] pointer-events-none">
-                </div>
-                <div class="relative px-12 py-12">
-                    <h1 class="text-7xl font-black mb-6 tracking-tight">CraftAI <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">DocSync
-                            Dashboard</span></h1>
-
-                    <form action="/analyze" method="POST" enctype="multipart/form-data" class="mb-12">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div class="p-8 border-2 border-dashed border-white/10 rounded-2xl bg-white/[0.02] text-center cursor-pointer hover:border-indigo-500/50 transition-all"
-                                onclick="document.getElementById('code_file').click()">
-                                <i data-lucide="package" class="w-10 h-10 text-indigo-400 mx-auto mb-4"></i>
-                                <h3 class="text-xs font-black uppercase text-white mb-2">1. Project Scenario</h3>
-                                <p class="text-[10px] text-gray-500 font-bold" id="code_txt">PY, JS, JAVA, ZIP, etc...
-                                </p>
-                                <input type="file" name="code_file" id="code_file" class="hidden"
-                                    onchange="updateFileName('code')">
-                            </div>
-                            <div class="p-8 border-2 border-dashed border-white/10 rounded-2xl bg-white/[0.02] text-center cursor-pointer hover:border-purple-500/50 transition-all"
-                                onclick="document.getElementById('doc_file').click()">
-                                <i data-lucide="book-open" class="w-10 h-10 text-purple-400 mx-auto mb-4"></i>
-                                <h3 class="text-xs font-black uppercase text-white mb-2">2. Documentation (optional)
-                                </h3>
-                                <p class="text-[10px] text-gray-500 font-bold" id="doc_txt">MD, TXT, RST...</p>
-                                <input type="file" name="doc_file" id="doc_file" class="hidden"
-                                    onchange="updateFileName('doc')">
-                            </div>
+                <form action="/analyze" method="POST" enctype="multipart/form-data" class="mb-12">
+                    <div class="grid grid-cols-2 gap-6 mb-8">
+                        <div class="p-8 border-2 border-dashed border-white/10 rounded-2xl text-center bg-white/5 cursor-pointer hover:border-indigo-500"
+                            onclick="document.getElementById('code_file').click()">
+                            <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto mb-2 text-indigo-400"></i>
+                            <h3 class="text-xs font-black uppercase">1. Project Scenario</h3>
+                            <p id="code_txt" class="text-[10px] text-gray-500 font-bold">Upload Source Code</p>
+                            <input type="file" id="code_file" name="code_file" class="hidden"
+                                onchange="updateUI('code')">
                         </div>
-                        <button type="submit"
-                            class="btn-gradient px-12 py-5 rounded-2xl font-black text-sm flex items-center gap-3">
-                            <i data-lucide="play" class="w-6 h-6"></i> INITIATE CONSISTENCY AUDIT
-                        </button>
-                    </form>
-
-                    {% if result %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="glass-card">
-                            <div class="flex items-center gap-3 mb-6"><i data-lucide="file-search"
-                                    class="w-6 h-6 text-indigo-400"></i>
-                                <h3 class="font-bold text-xs uppercase">Analysis Summary</h3>
-                            </div>
-                            <p class="text-4xl font-black text-white mb-1">{{ result.score }}%</p>
-                            <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4">{{
-                                result.label }}</p>
-                            <div class="w-full h-2 bg-white/5 rounded-full">
-                                <div class="h-full bg-indigo-500 rounded-full" style="width: {{ result.score }}%"></div>
-                            </div>
-                        </div>
-                        <div class="glass-card">
-                            <div class="flex items-center gap-3 mb-6"><i data-lucide="bar-chart-3"
-                                    class="w-6 h-6 text-purple-400"></i>
-                                <h3 class="font-bold text-xs uppercase">Statistic Report</h3>
-                            </div>
-                            <div class="space-y-4">
-                                <div class="flex justify-between"><span
-                                        class="text-[10px] text-gray-500 font-black uppercase">Total Issues</span><span
-                                        class="text-2xl font-black">{{ result.stats.total_issues }}</span></div>
-                                <div class="flex justify-between"><span
-                                        class="text-[10px] text-indigo-400 font-black uppercase">Synced
-                                        Terms</span><span class="text-2xl font-black">{{ result.stats.synced_terms
-                                        }}</span></div>
-                            </div>
-                        </div>
-                        <div class="glass-card">
-                            <div class="flex items-center gap-3 mb-6"><i data-lucide="alert-triangle"
-                                    class="w-6 h-6 text-orange-400"></i>
-                                <h3 class="font-bold text-xs uppercase">Issue Summary</h3>
-                            </div>
-                            <div class="space-y-4">
-                                <div>
-                                    <div class="flex justify-between text-[8px] font-black uppercase mb-1">
-                                        <span>Terminology</span><span>{{ result.stats.breakdown.Terminology }}%</span>
-                                    </div>
-                                    <div class="w-full h-1.5 bg-white/5 rounded-full">
-                                        <div class="h-full bg-red-400 rounded-full"
-                                            style="width:{{ result.stats.breakdown.Terminology }}%"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between text-[8px] font-black uppercase mb-1"><span>Logic
-                                            Gaps</span><span>{{ result.stats.breakdown.Logic }}%</span></div>
-                                    <div class="w-full h-1.5 bg-white/5 rounded-full">
-                                        <div class="h-full bg-blue-400 rounded-full"
-                                            style="width:{{ result.stats.breakdown.Logic }}%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="glass-card">
-                            <div class="flex items-center gap-3 mb-6"><i data-lucide="pie-chart"
-                                    class="w-6 h-6 text-pink-400"></i>
-                                <h3 class="font-bold text-xs uppercase">Visual Summary</h3>
-                            </div>
-                            <div class="h-32"><canvas id="healthChart"></canvas></div>
+                        <div class="p-8 border-2 border-dashed border-white/10 rounded-2xl text-center bg-white/5 cursor-pointer hover:border-purple-500"
+                            onclick="document.getElementById('doc_file').click()">
+                            <i data-lucide="file-plus" class="w-8 h-8 mx-auto mb-2 text-purple-400"></i>
+                            <h3 class="text-xs font-black uppercase">2. Documentation</h3>
+                            <p id="doc_txt" class="text-[10px] text-gray-500 font-bold">Upload README/MD</p>
+                            <input type="file" id="doc_file" name="doc_file" class="hidden" onchange="updateUI('doc')">
                         </div>
                     </div>
-                    {% endif %}
+                    <button type="submit" class="btn-gradient px-12 py-5 rounded-2xl font-black text-sm">INITIATE
+                        CONSISTENCY AUDIT</button>
+                </form>
+
+                {% if result %}
+                <div class="grid grid-cols-4 gap-6">
+                    <div class="glass-card">
+                        <h3 class="text-[10px] font-black uppercase text-gray-500 mb-4">Analysis Summary</h3>
+                        <p class="text-4xl font-black text-white">{{ result.score }}%</p>
+                        <p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">{{ result.label }}
+                        </p>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="text-[10px] font-black uppercase text-gray-500 mb-4">Statistic Report</h3>
+                        <div class="flex justify-between"><span class="text-[10px] font-black">Total Issues</span><span
+                                class="text-xl font-black text-red-500">{{ result.stats.total_issues }}</span></div>
+                        <div class="flex justify-between"><span class="text-[10px] font-black">Synced</span><span
+                                class="text-xl font-black text-green-500">{{ result.stats.synced_terms }}</span></div>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="text-[10px] font-black uppercase text-gray-500 mb-4">Issue Summary</h3>
+                        <p class="text-[9px] text-gray-400 leading-relaxed mb-4">{{ result.summary }}</p>
+                        <div class="h-1 bg-white/5 rounded-full">
+                            <div class="h-full bg-red-500/50" style="width: {{ result.stats.breakdown.Terminology }}%">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card">
+                        <h3 class="text-[10px] font-black uppercase text-gray-500 mb-2">Visual Summary</h3>
+                        <div class="h-24"><canvas id="mainChart"></canvas></div>
+                        <div class="mt-4 flex gap-4 text-[8px] font-black uppercase justify-center">
+                            <span class="text-indigo-400">● Synced</span>
+                            <span class="text-pink-400">● Gaps</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- REPORTS -->
+            <div id="view-reports" class="view-section p-12">
+                <h1 class="text-6xl font-black mb-8">Detailed <span class="text-purple-400">Reports</span></h1>
+                <div class="glass-card p-12 overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] font-black uppercase text-gray-500 border-b border-white/5">
+                            <tr>
+                                <th class="pb-6">Project Name</th>
+                                <th class="pb-6">Score</th>
+                                <th class="pb-6">Status</th>
+                                <th class="pb-6">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-body" class="text-sm"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- 2. REPORTS VIEW -->
-            <div id="view-reports" class="view-section">
-                <div class="px-12 py-12">
-                    <h1 class="text-6xl font-black mb-8">Detailed <span class="text-purple-400">Reports</span></h1>
-                    <div class="glass-card p-12">
-                        <table class="w-full text-left">
-                            <thead class="border-b border-white/10 text-xs font-black uppercase text-gray-500">
-                                <tr>
-                                    <th class="py-6">Project Archive</th>
-                                    <th class="py-6">Consistency Score</th>
-                                    <th class="py-6">Audit Status</th>
-                                    <th class="py-6">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-sm" id="report-table-body">
-                                {% for entry in history %}
-                                <tr class="border-b border-white/5">
-                                    <td class="py-6 font-bold">{{ entry.project }}</td>
-                                    <td class="py-6"><span
-                                            class="px-4 py-1.5 rounded-full bg-indigo-500/20 text-indigo-400 font-black">{{
-                                            entry.score }}%</span></td>
-                                    <td class="py-6 text-gray-400">{{ entry.status }}</td>
-                                    <td class="py-6"><button class="text-indigo-400 font-black hover:underline">Download
-                                            PDF</button></td>
-                                </tr>
-                                {% else %}
-                                <tr>
-                                    <td colspan="4"
-                                        class="py-20 text-center text-gray-500 font-bold uppercase tracking-widest opacity-30 italic">
-                                        No reports generated yet</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <!-- HISTORY -->
+            <div id="view-history" class="view-section p-12">
+                <h1 class="text-6xl font-black mb-8">Audit <span class="text-indigo-400">History</span></h1>
+                <div id="history-container" class="space-y-4"></div>
             </div>
-
-            <!-- 3. HISTORY VIEW -->
-            <div id="view-history" class="view-section">
-                <div class="px-12 py-12">
-                    <h1 class="text-6xl font-black mb-8">Audit <span class="text-indigo-400">History</span></h1>
-                    <div class="space-y-6" id="history-list">
-                        {% for entry in history %}
-                        <div class="glass-card flex items-center justify-between p-8 border-l-4 border-indigo-500">
-                            <div class="flex items-center gap-8">
-                                <div
-                                    class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-indigo-400 font-black text-xs">
-                                    {{ loop.index }}</div>
-                                <div>
-                                    <h3 class="text-xl font-black text-white mb-1 uppercase">{{ entry.project }}</h3>
-                                    <p class="text-xs text-gray-500 font-bold uppercase tracking-widest">Audit performed
-                                        on {{ entry.timestamp }}</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-2xl font-black text-white">{{ entry.score }}%</p>
-                                <p class="text-[10px] text-gray-500 font-black uppercase">Final Score</p>
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="text-center py-40 opacity-20">
-                            <i data-lucide="clock" class="w-20 h-20 mx-auto mb-6 text-gray-500"></i>
-                            <p class="text-2xl font-black uppercase tracking-widest">Historical Data Unavailable</p>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <script>
         lucide.createIcons();
 
-        // STORAGE: Saves audits to Browser for persistent History/Reports
-        function saveAudit(data) {
-            let history = JSON.parse(localStorage.getItem('audit_history') || '[]');
-            history.unshift(data);
-            if (history.length > 10) history.pop();
-            localStorage.setItem('audit_history', JSON.stringify(history));
+        function downloadPDF(project, score, status) {
+            const content = `CRAFT AI AUDIT REPORT\nProject: ${project}\nScore: ${score}%\nStatus: ${status}\nGenerated on: ${new Date().toLocaleString()}`;
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Audit_Report_${project}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
-        function renderData() {
-            const history = JSON.parse(localStorage.getItem('audit_history') || '[]');
+        function renderAll() {
+            const h = JSON.parse(localStorage.getItem('audits') || '[]');
+            const historyList = document.getElementById('history-container');
+            const reportTable = document.getElementById('report-body');
 
-            // 1. Render Reports Table
-            const table = document.getElementById('report-table-body');
-            if (table) {
-                if (history.length === 0) {
-                    table.innerHTML = '<tr><td colspan="4" class="py-20 text-center text-gray-500 font-bold uppercase opacity-30">No reports generated yet</td></tr>';
-                } else {
-                    table.innerHTML = history.map(e => `
-                        <tr class="border-b border-white/5">
-                            <td class="py-6 font-bold text-gray-300">${e.project}</td>
-                            <td class="py-6"><span class="px-4 py-1.5 rounded-full bg-indigo-500/20 text-indigo-400 font-black">${e.score}%</span></td>
-                            <td class="py-6 text-gray-400 text-[10px] font-black uppercase tracking-widest">${e.status}</td>
-                            <td class="py-6"><button class="text-indigo-400 font-black hover:text-white transition-all text-[10px] uppercase">Download</button></td>
-                        </tr>
-                    `).join('');
-                }
+            if (historyList) {
+                historyList.innerHTML = h.map(e => `
+                    <div class="glass-card flex justify-between items-center p-8 border-l-4 border-indigo-500">
+                        <div><h3 class="text-xl font-black uppercase">${e.project}</h3><p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${e.time}</p></div>
+                        <div class="text-right"><p class="text-3xl font-black text-indigo-400">${e.score}%</p><p class="text-[9px] text-gray-500 font-black uppercase">Accurate Consistency</p></div>
+                    </div>
+                `).join('');
             }
 
-            // 2. Render History List
-            const list = document.getElementById('history-list');
-            if (list) {
-                if (history.length === 0) {
-                    list.innerHTML = '<div class="text-center py-40 opacity-20"><i data-lucide="clock" class="w-10 h-10 mx-auto mb-4"></i><p class="text-sm font-black uppercase">No Data Available</p></div>';
-                } else {
-                    list.innerHTML = history.map((e, i) => `
-                        <div class="glass-card flex items-center justify-between p-8 border-l-4 border-indigo-500 mb-6 group hover:translate-x-2 transition-all cursor-default">
-                            <div class="flex items-center gap-8">
-                                <div class="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 font-black">#${i + 1}</div>
-                                <div>
-                                    <h3 class="text-lg font-black text-white uppercase">${e.project}</h3>
-                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">TIMESTAMP: ${e.timestamp}</p>
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-3xl font-black text-indigo-400">${e.score}%</p>
-                                <p class="text-[9px] text-gray-500 font-black uppercase">CONSISTENCY</p>
-                            </div>
-                        </div>
-                    `).join('');
-                }
+            if (reportTable) {
+                reportTable.innerHTML = h.map(e => `
+                    <tr class="border-b border-white/5">
+                        <td class="py-6 font-bold text-gray-300 uppercase">${e.project}</td>
+                        <td class="py-6 font-black text-indigo-400">${e.score}%</td>
+                        <td class="py-6 text-[10px] uppercase font-black text-gray-500">${e.status}</td>
+                        <td class="py-6"><button onclick="downloadPDF('${e.project}', '${e.score}', '${e.status}')" class="text-indigo-400 font-black hover:underline uppercase text-[10px]">Download Report</button></td>
+                    </tr>
+                `).join('');
             }
+        }
+
+        function showView(v) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('view-' + v).classList.add('active');
+            document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active'));
+            document.getElementById('nav-' + v).classList.add('active');
+            if (v !== 'dashboard') renderAll();
             lucide.createIcons();
         }
 
-        function showView(viewName) {
-            // Toggle Visuals
-            document.querySelectorAll('.view-section').forEach(v => {
-                v.classList.remove('active');
-                v.style.display = 'none';
-            });
-            const target = document.getElementById('view-' + viewName);
-            target.classList.add('active');
-            target.style.display = 'block';
-
-            // Sidebar Highlight
-            document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active', 'text-white'));
-            document.getElementById('nav-' + viewName).classList.add('active', 'text-white');
-
-            if (viewName !== 'dashboard') renderData();
-            lucide.createIcons();
+        function updateUI(id) {
+            const f = document.getElementById(id + '_file').files[0];
+            if (f) document.getElementById(id + '_txt').innerText = f.name;
         }
 
-        function updateFileName(id) {
-            const input = document.getElementById(id + '_file');
-            const txt = document.getElementById(id + '_txt');
-            if (input.files.length > 0) {
-                txt.innerHTML = `<span class="text-indigo-400 font-black">✓ ${input.files[0].name}</span>`;
-            }
-        }
-
-        // Automatic Persistent Logging
         {% if result %}
-        const resultData = {
-            project: "{{ result.file_list[0] if result.file_list else 'Project Source' }}",
+        const data = {
+            project: "{{ result.file_list[0] if result.file_list else 'Audit' }}",
             score: {{ result.score }},
         status: "{{ result.label }}",
-            timestamp: new Date().toLocaleString()
-            };
-        saveAudit(resultData);
-        {% endif %}
+            time: new Date().toLocaleString()
+        };
+        let h = JSON.parse(localStorage.getItem('audits') || '[]');
+        h.unshift(data);
+        localStorage.setItem('audits', JSON.stringify(h.slice(0, 10)));
 
-        window.onload = function () { renderData(); };
-
-        {% if result %}
-        const ctx = document.getElementById('healthChart').getContext('2d');
+        const ctx = document.getElementById('mainChart').getContext('2d');
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Synced', 'Gaps', 'Orphans'],
+                labels: ['Synced', 'Gaps', 'Meta'],
                 datasets: [{
                     data: {{ result.visual | tojson }},
             backgroundColor: ['#6366f1', '#f472b6', '#3b82f6'],
-            borderWidth: 0,
-            cutout: '80%'
+            borderWidth: 0, cutout: '85%'
         }]
             },
             options: { plugins: { legend: { display: false } }, maintainAspectRatio: false }
         });
         {% endif %}
+
+        window.onload = renderAll;
     </script>
 </body>
 
