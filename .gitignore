@@ -21,3 +21,13 @@ __pycache__/
 dist/
 build/
 *.egg-info/
+
+# Demo Artifacts (Note: demo_server.py is KEP as it is the main app)
+demo_files/
+code_demo.zip
+docs_demo.zip
+create_demo_zips.py
+
+# Unused Deployment Config
+vercel.json
+.vercelignore
