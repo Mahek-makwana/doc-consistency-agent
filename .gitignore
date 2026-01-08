@@ -21,13 +21,3 @@ __pycache__/
 dist/
 build/
 *.egg-info/
-
-# Demo files and folders
-demo_files/
-*demo*.zip
-create_demo_zips.py
-demo_server.py
-
-# Vercel deployment (not used)
-vercel.json
-.vercelignore
