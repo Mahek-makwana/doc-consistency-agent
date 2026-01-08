@@ -419,16 +419,89 @@ async def home(): return get_html()
 @app.post("/analyze")
 async def analyze(code_file: UploadFile = File(None), doc_file: UploadFile = File(None)):
     c_text, d_text = "", ""
+    
+    # Supported code file extensions (including ML/Data Science)
+    CODE_EXTENSIONS = (
+        '.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.cpp', '.c', '.h', '.cs', 
+        '.go', '.rs', '.php', '.rb', '.swift', '.kt', '.scala', '.m', '.r', '.pl',
+        '.ipynb',  # Jupyter Notebooks
+        '.sql',    # SQL queries
+        '.sh',     # Shell scripts
+        '.bat'     # Batch scripts
+    )
+    
+    # Supported documentation extensions
+    DOC_EXTENSIONS = ('.md', '.txt', '.rst', '.markdown', '.text')
+    
     if code_file:
-        buf = await code_file.read()
-        if code_file.filename.endswith('.zip'):
-            with zipfile.ZipFile(io.BytesIO(buf)) as z:
-                for n in z.namelist():
-                    if n.endswith(('.py','.js','.ts')): c_text += z.read(n).decode(errors='ignore') + "\n"
-        else: c_text = buf.decode(errors='ignore')
+        try:
+            buf = await code_file.read()
+            
+            # Special handling for Jupyter Notebooks
+            if code_file.filename.endswith('.ipynb'):
+                try:
+                    notebook = json.loads(buf.decode('utf-8'))
+                    for cell in notebook.get('cells', []):
+                        if cell.get('cell_type') == 'code':
+                            c_text += ''.join(cell.get('source', [])) + "\n\n"
+                        elif cell.get('cell_type') == 'markdown':
+                            d_text += ''.join(cell.get('source', [])) + "\n\n"
+                except:
+                    c_text = buf.decode(errors='ignore')
+            
+            # Handle ZIP files
+            elif code_file.filename.endswith('.zip'):
+                try:
+                    with zipfile.ZipFile(io.BytesIO(buf)) as z:
+                        for n in z.namelist():
+                            if n.endswith(CODE_EXTENSIONS) and not n.startswith('__MACOSX'):
+                                try:
+                                    file_content = z.read(n)
+                                    
+                                    # Special handling for .ipynb inside ZIP
+                                    if n.endswith('.ipynb'):
+                                        try:
+                                            notebook = json.loads(file_content.decode('utf-8'))
+                                            for cell in notebook.get('cells', []):
+                                                if cell.get('cell_type') == 'code':
+                                                    c_text += ''.join(cell.get('source', [])) + "\n\n"
+                                                elif cell.get('cell_type') == 'markdown':
+                                                    d_text += ''.join(cell.get('source', [])) + "\n\n"
+                                        except:
+                                            c_text += file_content.decode(errors='ignore') + "\n"
+                                    else:
+                                        c_text += file_content.decode(errors='ignore') + "\n"
+                                except:
+                                    continue
+                except zipfile.BadZipFile:
+                    c_text = buf.decode(errors='ignore')
+            
+            # Handle regular text files
+            else:
+                c_text = buf.decode(errors='ignore')
+                
+        except Exception as e:
+            c_text = f"# Error reading file: {str(e)}"
+    
     if doc_file:
-        buf = await doc_file.read()
-        d_text = buf.decode(errors='ignore')
+        try:
+            buf = await doc_file.read()
+            if doc_file.filename.endswith('.zip'):
+                try:
+                    with zipfile.ZipFile(io.BytesIO(buf)) as z:
+                        for n in z.namelist():
+                            if n.endswith(DOC_EXTENSIONS) and not n.startswith('__MACOSX'):
+                                try:
+                                    d_text += z.read(n).decode(errors='ignore') + "\n"
+                                except:
+                                    continue
+                except zipfile.BadZipFile:
+                    d_text = buf.decode(errors='ignore')
+            else:
+                d_text = buf.decode(errors='ignore')
+        except Exception as e:
+            d_text = f"Error reading documentation: {str(e)}"
+    
     return engine.audit(c_text, d_text)
 
 if __name__ == "__main__":
